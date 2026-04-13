@@ -180,3 +180,98 @@ def frequency_count(items):
     pairs = [{"key": k, "count": v} for k, v in freq.items()]
     quicksort(pairs, lambda x: -x["count"])
     return pairs
+# ─── Zone Classification (grid-based, no external geocoding) ──────────────────
+def classify_zone(lat, lon):
+    """Classify a GPS point into a named NYC zone using piecewise boundaries."""
+
+    # Manhattan
+    if 40.701 <= lat <= 40.882:
+        if lat < 40.710: m_east, m_west = -74.000, -74.020
+        elif lat < 40.720: m_east, m_west = -73.973, -74.019
+        elif lat < 40.732: m_east, m_west = -73.971, -74.015
+        elif lat < 40.745: m_east, m_west = -73.972, -74.013
+        elif lat < 40.760: m_east, m_west = -73.965, -74.008
+        elif lat < 40.775: m_east, m_west = -73.948, -74.000
+        elif lat < 40.790: m_east, m_west = -73.935, -73.992
+        elif lat < 40.810: m_east, m_west = -73.929, -73.975
+        elif lat < 40.835: m_east, m_west = -73.928, -73.958
+        elif lat < 40.860: m_east, m_west = -73.920, -73.948
+        else:              m_east, m_west = -73.906, -73.932
+
+        if m_west <= lon <= m_east:
+            if lat < 40.715:
+                return "Lower Manhattan / Financial District"
+            elif lat < 40.725:
+                return "Tribeca / SoHo" if lon < -74.000 else "Lower East Side / Chinatown"
+            elif lat < 40.745:
+                if lon < -74.000:
+                    return "West Village / Meatpacking"
+                elif lon < -73.985:
+                    return "East Village / NoHo"
+                else:
+                    return "Stuyvesant / LES North"
+            elif lat < 40.755:
+                if lon < -73.998:
+                    return "Chelsea / Hudson Yards"
+                elif lon < -73.983:
+                    return "Midtown South / Flatiron"
+                else:
+                    return "Gramercy / Murray Hill"
+            elif lat < 40.775:
+                if lon < -73.981:
+                    return "Midtown West / Times Square"
+                elif lon < -73.968:
+                    return "Midtown East / Grand Central"
+                else:
+                    return "Upper East Side South"
+            elif lat < 40.800:
+                return "Upper West Side" if lon < -73.968 else "Upper East Side"
+            elif lat < 40.820:
+                return "Morningside Heights" if lon < -73.955 else "East Harlem"
+            elif lat < 40.840:
+                return "Harlem"
+            elif lat < 40.867:
+                return "Washington Heights"
+            else:
+                return "Inwood"
+
+    # Bronx
+    if 40.785 <= lat <= 40.920 and -73.930 <= lon <= -73.760:
+        if lat < 40.830 and lon < -73.900:
+            return "South Bronx"
+        if lon > -73.870:
+            return "East Bronx"
+        return "Central Bronx"
+
+    # North Brooklyn
+    if 40.700 <= lat < 40.736 and -73.965 <= lon <= -73.900:
+        return "North Brooklyn"
+
+    # Brooklyn
+    if 40.550 <= lat <= 40.740 and -74.050 <= lon <= -73.855:
+        if lat < 40.635:
+            return "South Brooklyn"
+        elif lon < -73.950:
+            return "West Brooklyn"
+        else:
+            return "Central Brooklyn"
+
+    # Queens
+    if 40.540 <= lat <= 40.800 and -73.965 <= lon <= -73.700:
+        if lat < 40.680:
+            return "South Queens"
+        elif lon < -73.880:
+            return "West Queens"
+        else:
+            return "East Queens"
+
+    # Staten Island
+    if 40.490 <= lat <= 40.650 and -74.260 <= lon <= -74.050:
+        return "Staten Island"
+
+    # Staten Island
+    if 40.490 <= lat <= 40.650 and -74.260 <= lon <= -74.050:
+        return "Staten Island"
+
+    # Fallback
+    return "Outer Boroughs"
