@@ -1,0 +1,166 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 840" font-family="'DM Mono', 'Courier New', monospace" font-size="11">
+<style>
+  .bg       { fill: #ffffff; }
+  .box      { fill: #ffffff; stroke: #000000; stroke-width: 1.5; }
+  .header   { fill: #e0e0e0; stroke: #000000; stroke-width: 1.5; }
+  .sub      { fill: #ffffff; stroke: #000000; stroke-width: 1; }
+  .title    { font-family: 'DM Serif Display', Georgia, serif; font-size: 22px; fill: #000000; font-style: italic; }
+  .subtitle { font-family: 'DM Mono', monospace; font-size: 10px; fill: #555555; letter-spacing: 0.12em; text-transform: uppercase; }
+  .btitle   { font-family: 'DM Serif Display', Georgia, serif; font-size: 14px; font-weight: 700; fill: #000000; font-style: italic; }
+  .ctitle   { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; fill: #000000; }
+  .cdesc    { font-family: 'DM Mono', monospace; font-size: 9.5px; fill: #555555; }
+  .arrow    { stroke: #000000; stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+  .alabel   { font-family: 'DM Mono', monospace; font-size: 9px; fill: #000000; font-style: italic; }
+  .note     { fill: #f5f5f5; stroke: #000000; stroke-width: 1; }
+  .nfold    { fill: #ffffff; stroke: #000000; stroke-width: 1; }
+  .ntext    { font-family: 'DM Mono', monospace; font-size: 9.5px; fill: #000000; }
+</style>
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#000000"/>
+  </marker>
+</defs>
+
+<rect class="bg" width="1400" height="840"/>
+
+<!-- Actor (far-left) -->
+<circle class="box" cx="80" cy="395" r="18"/>
+<line x1="80" y1="413" x2="80" y2="458" stroke="#000000" stroke-width="1.5"/>
+<line x1="55" y1="428" x2="105" y2="428" stroke="#000000" stroke-width="1.5"/>
+<line x1="80" y1="458" x2="60" y2="488" stroke="#000000" stroke-width="1.5"/>
+<line x1="80" y1="458" x2="100" y2="488" stroke="#000000" stroke-width="1.5"/>
+<text x="80" y="515" text-anchor="middle" class="ctitle">Analyst</text>
+<text x="80" y="530" text-anchor="middle" class="cdesc">(browser)</text>
+
+<!-- Dropbox cloud (top-left) -->
+<g transform="translate(170, 140)">
+  <path class="box" d="M 20 46
+    a 22 22 0 0 1 18 -36
+    a 28 28 0 0 1 50 -4
+    a 22 22 0 0 1 38 16
+    a 20 20 0 0 1 4 40
+    l -108 0
+    a 20 20 0 0 1 -2 -16 z"/>
+  <text x="66" y="28" text-anchor="middle" class="btitle">Dropbox</text>
+  <text x="66" y="48" text-anchor="middle" class="ctitle">[ train.csv ]</text>
+</g>
+
+<!-- Backend parent box -->
+<rect class="header" x="420" y="175" width="560" height="30"/>
+<text x="700" y="195" text-anchor="middle" class="btitle">Backend — Flask / Python 3.11</text>
+<rect class="box" x="420" y="205" width="560" height="160"/>
+
+<!-- ETL sub-component -->
+<rect class="sub" x="450" y="225" width="240" height="120"/>
+<text x="570" y="250" text-anchor="middle" class="ctitle">ETL Pipeline</text>
+<text x="570" y="270" text-anchor="middle" class="cdesc">stream CSV · validate</text>
+<text x="570" y="285" text-anchor="middle" class="cdesc">haversine · classify zone</text>
+<text x="570" y="300" text-anchor="middle" class="cdesc">derive features · batch insert</text>
+<text x="570" y="315" text-anchor="middle" class="cdesc">9 optimisations</text>
+<text x="570" y="332" text-anchor="middle" class="cdesc" font-style="italic">~115k rows/sec</text>
+
+<!-- Flask REST API sub-component -->
+<rect class="sub" x="710" y="225" width="240" height="120"/>
+<text x="830" y="250" text-anchor="middle" class="ctitle">Flask REST API</text>
+<text x="830" y="270" text-anchor="middle" class="cdesc">14 JSON endpoints</text>
+<text x="830" y="285" text-anchor="middle" class="cdesc">pagination · filters</text>
+<text x="830" y="300" text-anchor="middle" class="cdesc">custom QuickSort</text>
+<text x="830" y="315" text-anchor="middle" class="cdesc">frequency counter</text>
+
+<!-- SQLite database (right-side cylinder) -->
+<ellipse class="box" cx="1180" cy="205" rx="100" ry="18"/>
+<path class="box" d="M 1080 205 L 1080 360 A 100 18 0 0 0 1280 360 L 1280 205"/>
+<ellipse cx="1180" cy="205" rx="100" ry="18" fill="none" stroke="#000000" stroke-width="1.5"/>
+<text x="1180" y="182" text-anchor="middle" class="btitle">SQLite</text>
+<text x="1180" y="232" text-anchor="middle" class="ctitle">nyc_taxi.db</text>
+<text x="1180" y="252" text-anchor="middle" class="cdesc">zones</text>
+<text x="1180" y="267" text-anchor="middle" class="cdesc">time_slots</text>
+<text x="1180" y="282" text-anchor="middle" class="cdesc">trips (fact)</text>
+<text x="1180" y="297" text-anchor="middle" class="cdesc">trip_flags</text>
+<text x="1180" y="312" text-anchor="middle" class="cdesc">cleaning_log</text>
+<text x="1180" y="332" text-anchor="middle" class="cdesc">── 12 indexes ──</text>
+<text x="1180" y="348" text-anchor="middle" class="cdesc" font-style="italic">3NF normalised</text>
+
+<!-- Frontend parent box (bottom) -->
+<rect class="header" x="400" y="560" width="600" height="30"/>
+<text x="700" y="580" text-anchor="middle" class="btitle">Frontend — Cartographic Atlas</text>
+<rect class="box" x="400" y="590" width="600" height="170"/>
+
+<!-- index.html -->
+<rect class="sub" x="420" y="610" width="180" height="130"/>
+<text x="510" y="632" text-anchor="middle" class="ctitle">index.html</text>
+<text x="510" y="650" text-anchor="middle" class="cdesc">5 sheets</text>
+<text x="510" y="664" text-anchor="middle" class="cdesc">11 plates</text>
+<text x="510" y="678" text-anchor="middle" class="cdesc">filters</text>
+<text x="510" y="692" text-anchor="middle" class="cdesc">title block</text>
+<text x="510" y="706" text-anchor="middle" class="cdesc">graticule</text>
+<text x="510" y="720" text-anchor="middle" class="cdesc">colophon</text>
+
+<!-- dashboard.js -->
+<rect class="sub" x="610" y="610" width="180" height="130"/>
+<text x="700" y="632" text-anchor="middle" class="ctitle">dashboard.js</text>
+<text x="700" y="650" text-anchor="middle" class="cdesc">Chart.js bars</text>
+<text x="700" y="664" text-anchor="middle" class="cdesc">line charts</text>
+<text x="700" y="678" text-anchor="middle" class="cdesc">canvas heatmap</text>
+<text x="700" y="692" text-anchor="middle" class="cdesc">insight tables</text>
+<text x="700" y="706" text-anchor="middle" class="cdesc">sector register</text>
+<text x="700" y="720" text-anchor="middle" class="cdesc">API fetching</text>
+
+<!-- styles.css -->
+<rect class="sub" x="800" y="610" width="180" height="130"/>
+<text x="890" y="632" text-anchor="middle" class="ctitle">styles.css</text>
+<text x="890" y="650" text-anchor="middle" class="cdesc">paper grain</text>
+<text x="890" y="664" text-anchor="middle" class="cdesc">fold creases</text>
+<text x="890" y="678" text-anchor="middle" class="cdesc">plate borders</text>
+
+
+<!-- ═══ ARROWS ═══ -->
+<!-- Dropbox → ETL -->
+<path class="arrow" d="M 300 230 L 450 275"/>
+<text x="350" y="232" class="alabel">stream 1 MB chunks</text>
+
+<!-- ETL → SQLite -->
+<path class="arrow" d="M 690 270 L 1080 250"/>
+<text x="900" y="250" class="alabel">INSERT cleaned</text>
+
+<!-- SQLite → API -->
+<path class="arrow" d="M 1080 295 L 950 288"/>
+<text x="985" y="280" class="alabel">SELECT</text>
+
+<!-- Frontend → API -->
+<path class="arrow" d="M 720 560 L 720 365"/>
+<text x="730" y="460" class="alabel">HTTP GET /api/*</text>
+
+<!-- API → Frontend -->
+<path class="arrow" d="M 670 365 L 670 560"/>
+<text x="620" y="460" class="alabel">JSON</text>
+
+<!-- User → Frontend -->
+<path class="arrow" d="M 110 500 L 398 650"/>
+<text x="200" y="560" class="alabel">browses</text>
+
+<!-- ═══ NOTES ═══ -->
+<!-- right of ETL -->
+<rect class="note" x="230" y="395" width="190" height="135"/>
+<polygon class="nfold" points="230,395 230,410 245,395"/>
+<text x="240" y="415" class="ntext" font-weight="700">ETL optimisations:</text>
+<text x="240" y="431" class="ntext">· stdlib only, no pandas</text>
+<text x="240" y="447" class="ntext">· inlined haversine</text>
+<text x="240" y="463" class="ntext">· manual datetime parse</text>
+<text x="240" y="479" class="ntext">· Zeller's congruence</text>
+<text x="240" y="495" class="ntext">· deferred indexes</text>
+<text x="240" y="511" class="ntext">· 64 MB page cache</text>
+<text x="240" y="527" class="ntext">· batched executemany</text>
+
+<!-- right of DB -->
+<rect class="note" x="1090" y="395" width="200" height="120"/>
+<polygon class="nfold" points="1090,395 1090,410 1105,395"/>
+<text x="1100" y="415" class="ntext" font-weight="700">DB design:</text>
+<text x="1100" y="431" class="ntext">· 3NF normalised</text>
+<text x="1100" y="447" class="ntext">· 12 indexes cover every</text>
+<text x="1100" y="463" class="ntext">  WHERE clause used</text>
+<text x="1100" y="479" class="ntext">· 31 zones pre-seeded</text>
+<text x="1100" y="495" class="ntext">· 168 time_slots seeded</text>
+
+</svg>
