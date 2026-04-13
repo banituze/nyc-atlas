@@ -3,7 +3,7 @@
 A full-stack urban mobility data explorer rendered as a folded paper map of New York City in pure black and white.
 
 ## Live Site
-[atlas.banituze.tech](atlas.banituze.tech)
+[atlas.banituze.tech](https://atlas.banituze.tech)
 
 ## Table of Contents
 1. [What this is](#what-this-is)
