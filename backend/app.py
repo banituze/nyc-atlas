@@ -692,3 +692,24 @@ def api_speed_dist():
         ).fetchone()
         result.append({"label": label + " km/h", "count": row["count"]})
     return jsonify(result)
+@app.route("/api/vendor_comparison")
+def api_vendor():
+    db = get_db()
+    rows = db.execute("""
+        SELECT vendor_id, COUNT(*) as count,
+               AVG(trip_duration)/60 as avg_duration_min,
+               AVG(distance_km) as avg_distance,
+               AVG(speed_kmh) as avg_speed
+        FROM trips GROUP BY vendor_id
+    """).fetchall()
+    return jsonify([dict(r) for r in rows])
+@app.route("/api/passengers")
+def api_passengers():
+    db = get_db()
+    rows = db.execute("""
+        SELECT passenger_count, COUNT(*) as count,
+               AVG(trip_duration)/60 as avg_duration_min,
+               AVG(distance_km) as avg_distance
+        FROM trips GROUP BY passenger_count ORDER BY passenger_count
+    """).fetchall()
+    return jsonify([dict(r) for r in rows])
