@@ -616,3 +616,12 @@ document.querySelectorAll('.sheet-tab').forEach(btn => {
     if (view === 'insights') loadInsights();
   });
 });
+
+// ─── Populate hour filter ──────────────────────────────────────────────
+const hourSelect = document.getElementById('filter-hour');
+for (let h = 0; h < 24; h++) {
+  const opt = document.createElement('option');
+  opt.value = h;
+  opt.textContent = String(h).padStart(2, '0') + ':00';
+  hourSelect.appendChild(opt);
+}
