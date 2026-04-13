@@ -438,3 +438,57 @@ async function loadAtlas() {
   html += '</tbody></table>';
   document.getElementById('sector-register').innerHTML = html;
 }
+
+// ─── SHEET D: FIELD NOTEBOOK ──────────────────────────────────────────
+async function loadLedger(page = 1) {
+  currentPage = page;
+  const params = new URLSearchParams({ page, per_page: 40 });
+
+  const tripId     = document.getElementById('filter-id').value.trim();
+  const hour       = document.getElementById('filter-hour').value;
+  const day        = document.getElementById('filter-day').value;
+  const month      = document.getElementById('filter-month').value;
+  const vendor     = document.getElementById('filter-vendor').value;
+  const passengers = document.getElementById('filter-passengers').value;
+  const sortBy     = document.getElementById('filter-sort').value;
+  const order      = document.getElementById('filter-order').value;
+
+  if (tripId)     params.set('trip_id', tripId);
+  if (hour)       params.set('hour', hour);
+  if (day)        params.set('day', day);
+  if (month)      params.set('month', month);
+  if (vendor)     params.set('vendor', vendor);
+  if (passengers) params.set('passengers', passengers);
+  params.set('sort', sortBy);
+  params.set('order', order);
+
+  const data = await fetchJSON('/api/trips?' + params);
+  if (!data) {
+    document.getElementById('ledger-table').innerHTML = '<p style="padding:40px;text-align:center;color:#756c5b;font-style:italic">No records to show. Run the ETL pipeline first.</p>';
+    return;
+  }
+  let html = '<table><thead><tr>';
+  html += '<th>Trip ID</th><th>Vendor</th><th>Pickup</th><th>Pax</th><th>Duration</th><th>Distance</th><th>Velocity</th>';
+  html += '</tr></thead><tbody>';
+  data.trips.forEach(t => {
+    html += `<tr>
+      <td class="mono">${t.trip_id.slice(0, 12)}</td>
+      <td>${t.vendor_id === 1 ? 'I' : 'II'}</td>
+      <td class="mono">${t.pickup_datetime}</td>
+      <td>${t.passenger_count}</td>
+      <td>${(t.trip_duration / 60).toFixed(1)} min</td>
+      <td>${t.distance_km.toFixed(2)} km</td>
+      <td>${t.speed_kmh.toFixed(1)} km/h</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('ledger-table').innerHTML = html;
+  const totalPages = Math.ceil(data.total / data.per_page);
+  document.getElementById('ledger-pagination').innerHTML = `
+    <span>${fmtFull(data.total)} records · page ${data.page} of ${totalPages}</span>
+    <div style="display:flex;gap:8px">
+      <button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="loadLedger(${page - 1})">← prev</button>
+      <button class="page-btn" ${page >= totalPages ? 'disabled' : ''} onclick="loadLedger(${page + 1})">next →</button>
+    </div>
+  `;
+}
