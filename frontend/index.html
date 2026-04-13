@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYC Taxi Cartographic Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="paper-grain"></div>
+<div class="paper-creases"></div>
+<div class="paper-edge"></div>
+
+<header class="title-block">
+  <div class="title-stamp">
+    <svg viewBox="0 0 80 80" class="seal">
+      <circle cx="40" cy="40" r="36" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="40" cy="40" r="30" fill="none" stroke="currentColor" stroke-width="0.6"/>
+      <circle cx="40" cy="40" r="22" fill="none" stroke="currentColor" stroke-width="0.6"/>
+      <text x="40" y="35" text-anchor="middle" font-family="DM Serif Display" font-size="10" font-weight="700" fill="currentColor">NYC</text>
+      <text x="40" y="48" text-anchor="middle" font-family="DM Mono" font-size="6" fill="currentColor">CARTO</text>
+      <text x="40" y="56" text-anchor="middle" font-family="DM Mono" font-size="6" fill="currentColor">2016</text>
+      <line x1="40" y1="4" x2="40" y2="10" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="40" y1="70" x2="40" y2="76" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="4" y1="40" x2="10" y2="40" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="70" y1="40" x2="76" y2="40" stroke="currentColor" stroke-width="1.2"/>
+      <text x="40" y="3" text-anchor="middle" font-family="DM Mono" font-size="5" fill="currentColor">N</text>
+    </svg>
+  </div>
+  <div class="title-text">
+    <h1 class="title-main">A Cartographic Atlas of</h1>
+    <h1 class="title-main accent">New York Taxi Trips</h1>
+    <p class="title-sub">Compiled from 1,458,644 fare records taken across the five boroughs<br>between 1 January and 30 June, in the year 2016</p>
+  </div>
+  <div class="title-meta">
+    <div class="meta-line"><span class="meta-key">Surveyors</span><span class="meta-val">Team Blue</span></div>
+    <div class="meta-line"><span class="meta-key">Source</span><span class="meta-val">NYC TLC / Kaggle</span></div>
+    <div class="meta-line"><span class="meta-key">Edition</span><span class="meta-val">First Folio</span></div>
+  </div>
+</header>
+
+<div class="graticule top">
+  <span>74°W</span><span>73°55'</span><span>73°50'</span><span>73°45'</span><span>73°40'</span>
+</div>
+<div class="graticule left">
+  <span>40°55'N</span><span>40°50'</span><span>40°45'</span><span>40°40'</span><span>40°35'</span>
+</div>
+<div class="graticule right">
+  <span>40°55'N</span><span>40°50'</span><span>40°45'</span><span>40°40'</span><span>40°35'</span>
+</div>
+
+<nav class="sheet-tabs">
+  <button class="sheet-tab active" data-view="overview">
+    <span class="tab-key">A</span>
+    <span class="tab-name">General Survey</span>
+  </button>
+  <button class="sheet-tab" data-view="rhythms">
+    <span class="tab-key">B</span>
+    <span class="tab-name">Temporal Charts</span>
+  </button>
+  <button class="sheet-tab" data-view="atlas">
+    <span class="tab-key">C</span>
+    <span class="tab-name">Borough Plates</span>
+  </button>
+  <button class="sheet-tab" data-view="ledger">
+    <span class="tab-key">D</span>
+    <span class="tab-name">Field Notebook</span>
+  </button>
+  <button class="sheet-tab" data-view="insights">
+    <span class="tab-key">E</span>
+    <span class="tab-name">Marginalia</span>
+  </button>
+</nav>
+
+<main>
+
+<!-- ═══ SHEET A: GENERAL SURVEY ═══ -->
+<section class="view active" id="view-overview">
+  <div class="legend-block">
+    <div class="legend-corner tl"></div>
+    <div class="legend-corner tr"></div>
+    <div class="legend-corner bl"></div>
+    <div class="legend-corner br"></div>
+    <div class="legend-header">
+      <span class="legend-title">SURVEY KEY  FIGURES</span>
+    </div>
+    <div class="key-grid">
+      <div class="key-item">
+        <div class="key-symbol">∑</div>
+        <div class="key-text">
+          <div class="key-label">Total fares enumerated</div>
+          <div class="key-value" data-stat="total_trips">——</div>
+        </div>
+      </div>
+      <div class="key-item">
+        <div class="key-symbol">⊙</div>
+        <div class="key-text">
+          <div class="key-label">Cumulative wheel-hours</div>
+          <div class="key-value" data-stat="total_hours">——</div>
+        </div>
+      </div>
+      <div class="key-item">
+        <div class="key-symbol">↔</div>
+        <div class="key-text">
+          <div class="key-label">Mean range, kilometres</div>
+          <div class="key-value" data-stat="avg_distance_km">——</div>
+        </div>
+      </div>
+      <div class="key-item">
+        <div class="key-symbol">⊳</div>
+        <div class="key-text">
+          <div class="key-label">Mean velocity, km/h</div>
+          <div class="key-value" data-stat="avg_speed_kmh">——</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-inset hero">
+    <div class="inset-header">
+      <span class="plate-num">PLATE I</span>
+      <span class="plate-title">The Diurnal Pulse — Trips by Hour of Day</span>
+    </div>
+    <div class="inset-body">
+      <div class="chart-canvas-wrap hero"><canvas id="chart-hourly"></canvas></div>
+    </div>
+    <div class="inset-margin">
+      <span class="margin-note">Shaded bars at 0700–0900 &amp; 1700–1900 mark the rush hours, when the city slows.</span>
+      <span class="scale-bar">
+        <span class="bar-tick">0</span><span class="bar-line"></span>
+        <span class="bar-tick">12h</span><span class="bar-line"></span>
+        <span class="bar-tick">24h</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="twin-map">
+    <div class="map-inset">
+      <div class="inset-header">
+        <span class="plate-num">PLATE II</span>
+        <span class="plate-title">Distribution of Trip Durations</span>
+      </div>
+      <div class="inset-body"><div class="chart-canvas-wrap"><canvas id="chart-duration"></canvas></div></div>
+      <div class="inset-margin"><span class="margin-note">Most fares last between 5 and 15 minutes.</span></div>
+    </div>
+    <div class="map-inset">
+      <div class="inset-header">
+        <span class="plate-num">PLATE III</span>
+        <span class="plate-title">Distribution of Trip Velocities</span>
+      </div>
+      <div class="inset-body"><div class="chart-canvas-wrap"><canvas id="chart-speed"></canvas></div></div>
+      <div class="inset-margin"><span class="margin-note">The true velocity of the city is between 10 and 25 km/h.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SHEET B: TEMPORAL CHARTS ═══ -->
+<section class="view" id="view-rhythms">
+  <div class="sheet-intro">
+    <span class="sheet-letter">B</span>
+    <h2 class="sheet-heading">Temporal Charts</h2>
+    <p class="sheet-blurb">A reading of the city's rhythms across the 168 hours of the working week, the seven days, and the six months of our survey period.</p>
+  </div>
+  <div class="map-inset hero">
+    <div class="inset-header">
+      <span class="plate-num">PLATE IV</span>
+      <span class="plate-title">Topographic Density — Hour × Day Activity Map</span>
+    </div>
+    <div class="inset-body">
+      <div class="topo-frame"><div id="heatmap"></div></div>
+    </div>
+    <div class="inset-margin">
+      <div class="legend-strip">
+        <span>FEWER TRIPS</span>
+        <div class="legend-gradient"></div>
+        <span>MORE TRIPS</span>
+      </div>
+    </div>
+  </div>
+  <div class="trio-map">
+    <div class="map-inset">
+      <div class="inset-header"><span class="plate-num">PLATE V</span><span class="plate-title">Days of the Week</span></div>
+      <div class="inset-body"><div class="chart-canvas-wrap"><canvas id="chart-daily"></canvas></div></div>
+    </div>
+    <div class="map-inset">
+      <div class="inset-header"><span class="plate-num">PLATE VI</span><span class="plate-title">Monthly Procession</span></div>
+      <div class="inset-body"><div class="chart-canvas-wrap"><canvas id="chart-monthly"></canvas></div></div>
+    </div>
+    <div class="map-inset">
+      <div class="inset-header"><span class="plate-num">PLATE VII</span><span class="plate-title">Passengers per Fare</span></div>
+      <div class="inset-body"><div class="chart-canvas-wrap"><canvas id="chart-passengers"></canvas></div></div>
+    </div>
+  </div>
+  <div class="map-inset">
+    <div class="inset-header">
+      <span class="plate-num">PLATE VIII</span>
+      <span class="plate-title">A Comparison of the Two Vendors</span>
+    </div>
+    <div class="inset-body"><div class="chart-canvas-wrap"><canvas id="chart-vendor"></canvas></div></div>
+    <div class="inset-margin"><span class="margin-note">Vendor 1 and Vendor 2 — nearly identical on the street, but distinct in the aggregate.</span></div>
+  </div>
+</section>
+
+<!-- ═══ SHEET C: BOROUGH PLATES ═══ -->
+<section class="view" id="view-atlas">
+  <div class="sheet-intro">
+    <span class="sheet-letter">C</span>
+    <h2 class="sheet-heading">Borough Plates</h2>
+    <p class="sheet-blurb">A cartography of pickups, ranked by frequency. Midtown's gravitational pull is unmistakable from any vantage.</p>
+  </div>
+  <div class="map-inset hero">
+    <div class="inset-header">
+      <span class="plate-num">PLATE IX</span>
+      <span class="plate-title">Pickup Density by Sector</span>
+    </div>
+    <div class="inset-body"><div class="chart-canvas-wrap tall"><canvas id="chart-zones"></canvas></div></div>
+  </div>
+  <div class="map-inset">
+    <div class="inset-header">
+      <span class="plate-num">PLATE X</span>
+      <span class="plate-title">Sector Register — Full Tabulation</span>
+    </div>
+    <div class="inset-body">
+      <div class="sector-register-wrap">
+        <div id="sector-register"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SHEET D: FIELD NOTEBOOK ═══ -->
+<section class="view" id="view-ledger">
+  <div class="sheet-intro">
+    <span class="sheet-letter">D</span>
+    <h2 class="sheet-heading">Field Notebook</h2>
+    <p class="sheet-blurb">Individual fare records, sortable and filterable. Each row a brief biography of one journey across the boroughs.</p>
+  </div>
+  <div class="map-inset">
+    <div class="inset-header">
+      <span class="plate-num">PLATE XI</span>
+      <span class="plate-title">The Surveyor's Notebook</span>
+    </div>
+    <div class="inset-body">
+      <div class="filter-strip">
+        <div class="fld">
+          <label>Trip ID</label>
+          <input id="filter-id" type="text" placeholder="contains…" />
+        </div>
+        <div class="fld">
+          <label>Hour</label>
+          <select id="filter-hour"><option value="">— any —</option></select>
+        </div>
+        <div class="fld">
+          <label>Day</label>
+          <select id="filter-day">
+            <option value="">— any —</option>
+            <option value="0">Monday</option><option value="1">Tuesday</option>
+            <option value="2">Wednesday</option><option value="3">Thursday</option>
+            <option value="4">Friday</option><option value="5">Saturday</option>
+            <option value="6">Sunday</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Month</label>
+          <select id="filter-month">
+            <option value="">— any —</option>
+            <option value="1">Jan</option><option value="2">Feb</option>
+            <option value="3">Mar</option><option value="4">Apr</option>
+            <option value="5">May</option><option value="6">Jun</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Vendor</label>
+          <select id="filter-vendor">
+            <option value="">— both —</option>
+            <option value="1">Vendor I</option><option value="2">Vendor II</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Passengers</label>
+          <select id="filter-passengers">
+            <option value="">— any —</option>
+            <option value="1">1</option><option value="2">2</option>
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="6">6</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Sort by</label>
+          <select id="filter-sort">
+            <option value="trip_duration">Duration</option>            
+            <option value="pickup_datetime">Date</option>
+            <option value="distance_km">Distance</option>
+            <option value="speed_kmh">Velocity</option>
+            <option value="passenger_count">Passengers</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label>Order</label>
+          <select id="filter-order">
+            <option value="DESC">↓ Descending</option>
+            <option value="ASC">↑ Ascending</option>
+          </select>
+        </div>
+        <button class="quill-btn" id="btn-apply">Apply</button>
+        <button class="quill-btn quill-btn--ghost" id="btn-reset">Reset</button>
+      </div>
+      <div id="ledger-table"></div>
+      <div id="ledger-pagination" class="ledger-pagination"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SHEET E: MARGINALIA ═══ -->
+<section class="view" id="view-insights">
+  <div class="sheet-intro">
+    <span class="sheet-letter">E</span>
+    <h2 class="sheet-heading">Marginalia</h2>
+    <p class="sheet-blurb">Three findings annotated in the cartographer's hand. Each one a small argument the data was already making.</p>
+  </div>
+  <div id="insights-container"></div>
+</section>
+
+</main>
+
+<footer class="map-colophon">
+  <div class="scale-master">
+    <div class="scale-label">SCALE OF NAUTICAL MILES</div>
+    <div class="scale-graphic">
+      <span class="scale-tick">0</span>
+      <div class="scale-segments">
+        <div class="seg dark"></div><div class="seg"></div>
+        <div class="seg dark"></div><div class="seg"></div>
+        <div class="seg dark"></div>
+      </div>
+      <span class="scale-tick">5</span>
+    </div>
+  </div>
+  <div class="colophon-text">
+    <p><strong>NYC Taxi Cartographic Atlas</strong> &middot; Surveyed and engraved by Team Blue.</p>
+  </div>
+  <div class="map-mark">
+    <svg viewBox="0 0 60 60" width="48" height="48">
+      <circle cx="30" cy="30" r="26" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="30" y1="6" x2="30" y2="14" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="30" y1="46" x2="30" y2="54" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="6" y1="30" x2="14" y2="30" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="46" y1="30" x2="54" y2="30" stroke="currentColor" stroke-width="1.2"/>
+      <polygon points="30,12 28,30 30,32 32,30" fill="currentColor"/>
+      <polygon points="30,48 32,30 30,28 28,30" fill="none" stroke="currentColor" stroke-width="0.8"/>
+      <text x="30" y="9" text-anchor="middle" font-family="DM Mono" font-size="6" font-weight="700" fill="currentColor">N</text>
+      <text x="30" y="58" text-anchor="middle" font-family="DM Mono" font-size="6" fill="currentColor">S</text>
+      <text x="3" y="32" text-anchor="middle" font-family="DM Mono" font-size="6" fill="currentColor">W</text>
+      <text x="57" y="32" text-anchor="middle" font-family="DM Mono" font-size="6" fill="currentColor">E</text>
+    </svg>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('contextmenu', event => event.preventDefault());
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+      e.preventDefault();
+    }
+  });
+</script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
