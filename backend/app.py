@@ -790,3 +790,12 @@ def api_cleaning_log():
     db = get_db()
     rows = db.execute("SELECT * FROM cleaning_log ORDER BY log_id").fetchall()
     return jsonify([dict(r) for r in rows])
+@app.route("/api/heatmap")
+def api_heatmap():
+    db = get_db()
+    rows = db.execute("""
+        SELECT hour_of_day, day_of_week, COUNT(*) as count,
+               AVG(trip_duration)/60 as avg_duration
+        FROM trips GROUP BY hour_of_day, day_of_week
+    """).fetchall()
+    return jsonify([dict(r) for r in rows])
