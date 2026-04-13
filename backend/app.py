@@ -584,3 +584,16 @@ def index():
 @app.route("/<path:filename>")
 def static_files(filename):
     return send_from_directory(FRONTEND_DIR, filename)
+@app.route("/api/stats")
+def api_stats():
+    db = get_db()
+    stats = {}
+    row = db.execute("SELECT COUNT(*) as total, AVG(trip_duration) as avg_dur, AVG(distance_km) as avg_dist, AVG(speed_kmh) as avg_speed, SUM(trip_duration) as total_dur FROM trips").fetchone()
+    stats["total_trips"] = row["total"]
+    stats["avg_duration_min"] = round(row["avg_dur"] / 60, 1) if row["avg_dur"] else 0
+    stats["avg_distance_km"] = round(row["avg_dist"], 2) if row["avg_dist"] else 0
+    stats["avg_speed_kmh"] = round(row["avg_speed"], 1) if row["avg_speed"] else 0
+    stats["total_hours"] = round(row["total_dur"] / 3600, 0) if row["total_dur"] else 0
+    row2 = db.execute("SELECT COUNT(*) as cnt FROM trip_flags").fetchone()
+    stats["flagged_trips"] = row2["cnt"]
+    return jsonify(stats)
