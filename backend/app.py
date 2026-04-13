@@ -641,3 +641,17 @@ def api_monthly():
         d["month_name"] = months[d["month"]] if d["month"] < len(months) else str(d["month"])
         result.append(d)
     return jsonify(result)
+@app.route("/api/zones")
+def api_zones():
+    db = get_db()
+    rows = db.execute("""
+        SELECT z.zone_name, z.trip_count, z.avg_lat, z.avg_lon,
+               AVG(t.trip_duration)/60 as avg_duration_min,
+               AVG(t.distance_km) as avg_distance,
+               AVG(t.speed_kmh) as avg_speed
+        FROM zones z
+        LEFT JOIN trips t ON t.pickup_zone_id = z.zone_id
+        GROUP BY z.zone_id
+        ORDER BY z.trip_count DESC
+    """).fetchall()
+    return jsonify([dict(r) for r in rows])
