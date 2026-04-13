@@ -306,3 +306,39 @@ def run_pipeline(db_path=DB_PATH, csv_path=CSV_PATH, limit=None):
         logger.error(f"CSV not found: {csv_path}")
         conn.close()
         return
+    # ── Pre-populate zones (all 31 possible from classify_zone) ──────────
+    # This lets us look up zone_id directly during streaming insert, avoiding
+    # a second pass over 1.4M rows to link zones.
+    ALL_ZONES = [
+        "Lower Manhattan / Financial District",
+        "Tribeca / SoHo",
+        "Lower East Side / Chinatown",
+        "West Village / Meatpacking",
+        "East Village / NoHo",
+        "Stuyvesant / LES North",
+        "Chelsea / Hudson Yards",
+        "Midtown South / Flatiron",
+        "Gramercy / Murray Hill",
+        "Midtown West / Times Square",
+        "Midtown East / Grand Central",
+        "Upper East Side South",
+        "Upper West Side",
+        "Upper East Side",
+        "Morningside Heights",
+        "East Harlem",
+        "Harlem",
+        "Washington Heights",
+        "Inwood",
+        "South Bronx",
+        "Central Bronx",
+        "East Bronx",
+        "North Brooklyn",
+        "South Brooklyn",
+        "West Brooklyn",
+        "Central Brooklyn",
+        "South Queens",
+        "West Queens",
+        "East Queens",
+        "Staten Island",
+        "Outer Boroughs",
+    ]
