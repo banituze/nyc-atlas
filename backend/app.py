@@ -133,3 +133,35 @@ def haversine(lat1, lon1, lat2, lon2):
          math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
          math.sin(dlon / 2) ** 2)
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+# ─── Custom QuickSort (no built-in sort) ──────────────────────────────────────
+def quicksort(arr, key_func):
+    """
+    Custom QuickSort implementation — manual, no built-in sort.
+    Uses median-of-three pivot selection for better performance.
+    Time Complexity: O(n log n) average, O(n^2) worst case
+    Space Complexity: O(log n) for recursion stack
+    """
+    if len(arr) <= 1:
+        return arr
+    def _sort(a, lo, hi):
+        if lo >= hi:
+            return
+        mid = (lo + hi) // 2
+        if key_func(a[lo]) > key_func(a[mid]):
+            a[lo], a[mid] = a[mid], a[lo]
+        if key_func(a[lo]) > key_func(a[hi]):
+            a[lo], a[hi] = a[hi], a[lo]
+        if key_func(a[mid]) > key_func(a[hi]):
+            a[mid], a[hi] = a[hi], a[mid]
+        a[mid], a[hi] = a[hi], a[mid]
+        pivot_val = key_func(a[hi])
+        i = lo
+        for j in range(lo, hi):
+            if key_func(a[j]) <= pivot_val:
+                a[i], a[j] = a[j], a[i]
+                i += 1
+        a[i], a[hi] = a[hi], a[i]
+        _sort(a, lo, i - 1)
+        _sort(a, i + 1, hi)
+    _sort(arr, 0, len(arr) - 1)
+    return arr
