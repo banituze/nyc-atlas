@@ -77,3 +77,99 @@ function paperAxes() {
     }
   };
 }
+
+// ─── SHEET A: GENERAL SURVEY ───────────────────────────────────────────
+async function loadOverview() {
+  if (loadedViews.overview) return;
+  loadedViews.overview = true;
+  const stats = await fetchJSON('/api/stats');
+  if (stats) {
+    document.querySelectorAll('[data-stat]').forEach(el => {
+      const key = el.dataset.stat;
+      const v = stats[key];
+      if (v == null) return;
+      if (key === 'total_trips') el.textContent = fmt(v);
+      else if (key === 'total_hours') el.textContent = fmt(v);
+      else if (key === 'avg_distance_km') el.textContent = v.toFixed(1);
+      else if (key === 'avg_speed_kmh') el.textContent = v.toFixed(1);
+      else el.textContent = fmt(v);
+    });
+  }
+  const hourly = await fetchJSON('/api/hourly');
+  if (hourly) {
+    new Chart(document.getElementById('chart-hourly'), {
+      type: 'bar',
+      data: {
+        labels: hourly.map(h => String(h.hour_of_day).padStart(2, '0')),
+        datasets: [{
+          data: hourly.map(h => h.count),
+          backgroundColor: hourly.map(h => {
+            const isRush = (h.hour_of_day >= 7 && h.hour_of_day <= 9) || (h.hour_of_day >= 17 && h.hour_of_day <= 19);
+            return isRush ? INK : INK_GHOST;
+          }),
+          borderWidth: 0, barPercentage: 0.78, categoryPercentage: 0.92,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+        plugins: {
+          tooltip: { callbacks: { title: c => `${c[0].label}:00h`, label: c => `${fmtFull(c.parsed.y)} trips` } },
+          legend: {
+            display: true, position: 'top', align: 'end',
+            labels: {
+              color: INK, font: { family: "'DM Mono', monospace", size: 9 },
+              usePointStyle: true, pointStyle: 'circle', boxWidth: 10, boxHeight: 10, padding: 12,
+              generateLabels: () => [
+                { text: 'Rush hour', fillStyle: INK, strokeStyle: INK },
+                { text: 'Off-peak', fillStyle: INK_GHOST, strokeStyle: INK_GHOST },
+              ]
+            }
+          }
+        },
+        scales: {
+          ...paperAxes(),
+          x: { ...paperAxes().x, title: { display: true, text: 'Hour of day', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { top: 6 } } },
+          y: { ...paperAxes().y, title: { display: true, text: 'Trip count', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { bottom: 6 } } }
+        }
+      }
+    });
+  }
+  const durDist = await fetchJSON('/api/duration_distribution');
+  if (durDist) {
+    new Chart(document.getElementById('chart-duration'), {
+      type: 'bar',
+      data: {
+        labels: durDist.map(d => d.label),
+        datasets: [{ data: durDist.map(d => d.count), backgroundColor: INK_SOFT, borderColor: INK, borderWidth: 1, barPercentage: 0.85, categoryPercentage: 0.95 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+        plugins: { tooltip: { callbacks: { title: c => c[0].label, label: c => `${fmtFull(c.parsed.y)} trips` } } },
+        scales: {
+          ...paperAxes(),
+          x: { ...paperAxes().x, title: { display: true, text: 'Duration bucket', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { top: 6 } } },
+          y: { ...paperAxes().y, title: { display: true, text: 'Trip count', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { bottom: 6 } } }
+        }
+      }
+    });
+  }
+  const speedDist = await fetchJSON('/api/speed_distribution');
+  if (speedDist) {
+    new Chart(document.getElementById('chart-speed'), {
+      type: 'bar',
+      data: {
+        labels: speedDist.map(d => d.label),
+        datasets: [{ data: speedDist.map(d => d.count), backgroundColor: INK, borderColor: INK, borderWidth: 0, barPercentage: 0.85, categoryPercentage: 0.95 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+        plugins: { tooltip: { callbacks: { title: c => c[0].label, label: c => `${fmtFull(c.parsed.y)} trips` } } },
+        scales: {
+          ...paperAxes(),
+          x: { ...paperAxes().x, title: { display: true, text: 'Speed bucket', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { top: 6 } } },
+          y: { ...paperAxes().y, title: { display: true, text: 'Trip count', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { bottom: 6 } } }
+        }
+      }
+    });
+  }
+}
