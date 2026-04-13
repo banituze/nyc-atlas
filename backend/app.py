@@ -123,3 +123,13 @@ CREATE INDEX idx_trips_time_slot ON trips(time_slot_id);
 CREATE INDEX idx_flags_trip ON trip_flags(trip_id);
 CREATE INDEX idx_flags_type ON trip_flags(flag_type);
 """
+# ─── Haversine Distance (no external libraries) ──────────────────────────────
+def haversine(lat1, lon1, lat2, lon2):
+    """Calculate distance in km between two GPS coordinates."""
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2 +
+         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
+         math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
