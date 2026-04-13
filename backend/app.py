@@ -275,3 +275,14 @@ def classify_zone(lat, lon):
 
     # Fallback
     return "Outer Boroughs"
+
+def get_period(hour):
+    """Classify hour into time period."""
+    if 6 <= hour < 12:
+        return "morning"
+    elif 12 <= hour < 17:
+        return "afternoon"
+    elif 17 <= hour < 21:
+        return "evening"
+    else:
+        return "night"
