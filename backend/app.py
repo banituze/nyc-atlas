@@ -713,3 +713,67 @@ def api_passengers():
         FROM trips GROUP BY passenger_count ORDER BY passenger_count
     """).fetchall()
     return jsonify([dict(r) for r in rows])
+@app.route("/api/trips")
+def api_trips():
+    db = get_db()
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 50))
+    offset = (page - 1) * per_page
+    conditions = []
+    params = []
+    trip_id = request.args.get("trip_id")
+    if trip_id:
+        conditions.append("trip_id LIKE ?")
+        params.append(f"%{trip_id}%")
+    passengers = request.args.get("passengers")
+    if passengers is not None and passengers != "":
+        conditions.append("passenger_count = ?")
+        params.append(int(passengers))
+    month = request.args.get("month")
+    if month is not None and month != "":
+        conditions.append("month = ?")
+        params.append(int(month))
+    hour = request.args.get("hour")
+    if hour is not None and hour != "":
+        conditions.append("hour_of_day = ?")
+        params.append(int(hour))
+    dow = request.args.get("day")
+    if dow is not None and dow != "":
+        conditions.append("day_of_week = ?")
+        params.append(int(dow))
+    vendor = request.args.get("vendor")
+    if vendor is not None and vendor != "":
+        conditions.append("vendor_id = ?")
+        params.append(int(vendor))
+    min_dist = request.args.get("min_distance")
+    if min_dist is not None and min_dist != "":
+        conditions.append("distance_km >= ?")
+        params.append(float(min_dist))
+    max_dist = request.args.get("max_distance")
+    if max_dist is not None and max_dist != "":
+        conditions.append("distance_km <= ?")
+        params.append(float(max_dist))
+    sort_by = request.args.get("sort", "trip_duration")
+    sort_order = request.args.get("order", "DESC")
+    allowed_sorts = ["trip_duration", "distance_km", "speed_kmh", "pickup_datetime", "passenger_count"]
+    if sort_by not in allowed_sorts:
+        sort_by = "trip_duration"
+    if sort_order not in ("ASC", "DESC"):
+        sort_order = "DESC"
+    where = " AND ".join(conditions) if conditions else "1=1"
+    count_row = db.execute(f"SELECT COUNT(*) as total FROM trips WHERE {where}", params).fetchone()
+    rows = db.execute(
+        f"""SELECT trip_id, vendor_id, pickup_datetime, dropoff_datetime,
+                   passenger_count, trip_duration, distance_km, speed_kmh,
+                   hour_of_day, day_of_week, month
+            FROM trips WHERE {where}
+            ORDER BY {sort_by} {sort_order}
+            LIMIT ? OFFSET ?""",
+        params + [per_page, offset]
+    ).fetchall()
+    return jsonify({
+        "total": count_row["total"],
+        "page": page,
+        "per_page": per_page,
+        "trips": [dict(r) for r in rows]
+    })
