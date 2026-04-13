@@ -98,4 +98,13 @@ CREATE TABLE trip_flags (
     description TEXT,
     FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE
 );
+CREATE TABLE cleaning_log (
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    stage TEXT NOT NULL,
+    records_in INTEGER,
+    records_out INTEGER,
+    records_excluded INTEGER,
+    reason TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
 """
