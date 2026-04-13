@@ -625,3 +625,21 @@ for (let h = 0; h < 24; h++) {
   opt.textContent = String(h).padStart(2, '0') + ':00';
   hourSelect.appendChild(opt);
 }
+
+// ─── Apply / Reset ─────────────────────────────────────────────────────
+document.getElementById('btn-apply').addEventListener('click', () => loadLedger(1));
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  document.getElementById('filter-id').value = '';
+  document.getElementById('filter-hour').value = '';
+  document.getElementById('filter-day').value = '';
+  document.getElementById('filter-month').value = '';
+  document.getElementById('filter-vendor').value = '';
+  document.getElementById('filter-passengers').value = '';
+  document.getElementById('filter-sort').value = 'trip_duration';
+  document.getElementById('filter-order').value = 'DESC';
+  loadLedger(1);
+});
+
+// ─── Initialize ────────────────────────────────────────────────────────
+loadOverview();
