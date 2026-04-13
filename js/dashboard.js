@@ -599,3 +599,20 @@ async function loadInsights() {
   }
   document.getElementById('insights-container').innerHTML = sections.join('');
 }
+
+// ─── Sheet switching ───────────────────────────────────────────────────
+document.querySelectorAll('.sheet-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.dataset.view;
+    document.querySelectorAll('.sheet-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-' + view).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (view === 'overview') loadOverview();
+    if (view === 'rhythms')  loadRhythms();
+    if (view === 'atlas')    loadAtlas();
+    if (view === 'ledger')   loadLedger(1);
+    if (view === 'insights') loadInsights();
+  });
+});
