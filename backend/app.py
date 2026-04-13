@@ -608,3 +608,19 @@ def api_hourly():
         FROM trips GROUP BY hour_of_day ORDER BY hour_of_day
     """).fetchall()
     return jsonify([dict(r) for r in rows])
+@app.route("/api/daily")
+def api_daily():
+    db = get_db()
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    rows = db.execute("""
+        SELECT day_of_week, COUNT(*) as count,
+               AVG(trip_duration)/60 as avg_duration_min,
+               AVG(distance_km) as avg_distance
+        FROM trips GROUP BY day_of_week ORDER BY day_of_week
+    """).fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        d["day_name"] = days[d["day_of_week"]]
+        result.append(d)
+    return jsonify(result)
