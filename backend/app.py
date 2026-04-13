@@ -165,3 +165,18 @@ def quicksort(arr, key_func):
         _sort(a, i + 1, hi)
     _sort(arr, 0, len(arr) - 1)
     return arr
+# ─── Custom Frequency Counter (no Counter/collections) ────────────────────────
+def frequency_count(items):
+    """
+    Manual frequency counter — no collections.Counter.
+    Returns dict of {item: count} sorted by count descending (using our quicksort).
+    """
+    freq = {}
+    for item in items:
+        if item in freq:
+            freq[item] += 1
+        else:
+            freq[item] = 1
+    pairs = [{"key": k, "count": v} for k, v in freq.items()]
+    quicksort(pairs, lambda x: -x["count"])
+    return pairs
