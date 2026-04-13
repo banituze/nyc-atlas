@@ -59,4 +59,12 @@ CREATE TABLE zones (
     avg_lon REAL NOT NULL,
     trip_count INTEGER DEFAULT 0
 );
+CREATE TABLE time_slots (
+    slot_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hour_of_day INTEGER NOT NULL,
+    day_of_week INTEGER NOT NULL,
+    period TEXT NOT NULL CHECK(period IN ('morning','afternoon','evening','night')),
+    is_weekend INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(hour_of_day, day_of_week)
+);
 """
