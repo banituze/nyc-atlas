@@ -45,3 +45,18 @@ def close_db(exception):
     db = g.pop("db", None)
     if db is not None:
         db.close()
+# ─── Database Schema ──────────────────────────────────────────────────────────
+SCHEMA_SQL = """
+DROP TABLE IF EXISTS trip_flags;
+DROP TABLE IF EXISTS trips;
+DROP TABLE IF EXISTS time_slots;
+DROP TABLE IF EXISTS zones;
+DROP TABLE IF EXISTS cleaning_log;
+CREATE TABLE zones (
+    zone_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    zone_name TEXT NOT NULL UNIQUE,
+    avg_lat REAL NOT NULL,
+    avg_lon REAL NOT NULL,
+    trip_count INTEGER DEFAULT 0
+);
+"""
