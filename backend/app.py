@@ -845,3 +845,35 @@ def api_insights():
         "interpretation": "Midtown Manhattan dominates as the busiest pickup area, driven by its concentration of offices, hotels, and transit hubs. The speed variation across zones reflects different street grid designs and congestion levels."
     })
     return jsonify(insights)
+DATASET_URL = os.environ.get(
+    "DATASET_URL",
+    "https://www.dropbox.com/scl/fi/ega99tbyzalx9jagiabzc/train.csv?rlkey=dfrnzx8ai0l1morp2burays5s&dl=1"
+)
+def download_dataset(url=DATASET_URL, dest=CSV_PATH, chunk_size=1 << 20):
+    import urllib.request
+    import ssl
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    logger.info(f"Downloading dataset from {url[:80]}...")
+    try:
+        ctx = ssl.create_default_context()
+    except Exception:
+        ctx = ssl._create_unverified_context()
+    req = urllib.request.Request(url, headers={"User-Agent": "nyc-taxi-atlas/1.0"})
+    with urllib.request.urlopen(req, context=ctx, timeout=60) as resp:
+        total = int(resp.headers.get("Content-Length") or 0)
+        downloaded = 0
+        next_log = 10 * 1024 * 1024
+        with open(dest, "wb") as f:
+            while True:
+                chunk = resp.read(chunk_size)
+                if not chunk:
+                    break
+                f.write(chunk)
+                downloaded += len(chunk)
+                if downloaded >= next_log:
+                    mb = downloaded / (1024 * 1024)
+                    pct = f" ({downloaded * 100 / total:.0f}%)" if total else ""
+                    logger.info(f"  Downloaded {mb:.0f} MB{pct}")
+                    next_log += 10 * 1024 * 1024
+    final_mb = os.path.getsize(dest) / (1024 * 1024)
+    logger.info(f"Downloaded {final_mb:.0f} MB to {dest}")
