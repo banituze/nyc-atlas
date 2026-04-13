@@ -492,3 +492,110 @@ async function loadLedger(page = 1) {
     </div>
   `;
 }
+
+// ─── SHEET E: MARGINALIA ───────────────────────────────────────────────
+async function loadInsights() {
+  if (loadedViews.insights) return;
+  loadedViews.insights = true;
+  const insights = await fetchJSON('/api/insights');
+  if (!insights) return;
+  const sections = [];
+  if (insights[0]) {
+    const rows = insights[0].data;
+    const rush = rows.find(r => r.period === 'Rush Hour') || {};
+    const off  = rows.find(r => r.period === 'Off-Peak') || {};
+    const speedDelta = (off.avg_speed && rush.avg_speed) ? (((rush.avg_speed - off.avg_speed) / off.avg_speed) * 100).toFixed(1) : '0';
+    const durDelta   = (off.avg_duration && rush.avg_duration) ? (((rush.avg_duration - off.avg_duration) / off.avg_duration) * 100).toFixed(1) : '0';
+    sections.push(`
+      <article class="margin-card">
+        <div class="margin-numeral">I.</div>
+        <div class="margin-content">
+          <div class="margin-tag">Marginal note 01 · the rush hour tax</div>
+          <h3 class="margin-title">${insights[0].title}</h3>
+          <p class="margin-prose">${insights[0].interpretation}</p>
+          <table class="margin-table">
+            <thead><tr><th>Period</th><th>Velocity</th><th>Duration</th><th>Trips</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Off-Peak</td>
+                <td>${off.avg_speed != null ? off.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+                <td>${off.avg_duration != null ? off.avg_duration.toFixed(1) : '—'}<span class="unit">min</span></td>
+                <td>${fmt(off.trips || 0)}</td>
+              </tr>
+              <tr>
+                <td>Rush Hour</td>
+                <td>${rush.avg_speed != null ? rush.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+                <td>${rush.avg_duration != null ? rush.avg_duration.toFixed(2) : '—'}<span class="unit">min</span></td>
+                <td>${fmt(rush.trips || 0)}</td>
+              </tr>
+              <tr class="delta-row">
+                <td>Δ</td>
+                <td>${parseFloat(speedDelta) > 0 ? '+' : ''}${speedDelta}%</td>
+                <td>${parseFloat(durDelta) > 0 ? '+' : ''}${durDelta}%</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>`);
+  }
+  if (insights[1]) {
+    const rows = insights[1].data;
+    const wkday = rows.find(r => r.type === 'Weekday') || {};
+    const wkend = rows.find(r => r.type === 'Weekend') || {};
+    sections.push(`
+      <article class="margin-card">
+        <div class="margin-numeral">II.</div>
+        <div class="margin-content">
+          <div class="margin-tag">Marginal note 02 · the weekend atlas</div>
+          <h3 class="margin-title">${insights[1].title}</h3>
+          <p class="margin-prose">${insights[1].interpretation}</p>
+          <table class="margin-table">
+            <thead><tr><th>Type</th><th>Distance</th><th>Duration</th><th>Velocity</th><th>Trips</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Weekday</td>
+                <td>${wkday.avg_distance != null ? wkday.avg_distance.toFixed(2) : '—'}<span class="unit">km</span></td>
+                <td>${wkday.avg_duration != null ? wkday.avg_duration.toFixed(1) : '—'}<span class="unit">min</span></td>
+                <td>${wkday.avg_speed != null ? wkday.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+                <td>${fmt(wkday.trips || 0)}</td>
+              </tr>
+              <tr>
+                <td>Weekend</td>
+                <td>${wkend.avg_distance != null ? wkend.avg_distance.toFixed(2) : '—'}<span class="unit">km</span></td>
+                <td>${wkend.avg_duration != null ? wkend.avg_duration.toFixed(1) : '—'}<span class="unit">min</span></td>
+                <td>${wkend.avg_speed != null ? wkend.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+                <td>${fmt(wkend.trips || 0)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>`);
+  }
+  if (insights[2]) {
+    const rows = insights[2].data;
+    const totalTop = rows.reduce((s, r) => s + (r.trip_count || 0), 0);
+    const tableRows = rows.map((r, i) => `
+      <tr>
+        <td>${String(i + 1).padStart(2, '0')}</td>
+        <td>${r.zone_name}</td>
+        <td>${fmt(r.trip_count)}</td>
+        <td>${totalTop ? ((r.trip_count / totalTop) * 100).toFixed(1) : '—'}%</td>
+        <td>${r.avg_speed != null ? r.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+      </tr>`).join('');
+    sections.push(`
+      <article class="margin-card">
+        <div class="margin-numeral">III.</div>
+        <div class="margin-content">
+          <div class="margin-tag">Marginal note 03 · sector dominance</div>
+          <h3 class="margin-title">${insights[2].title}</h3>
+          <p class="margin-prose">${insights[2].interpretation}</p>
+          <table class="margin-table">
+            <thead><tr><th>Rank</th><th>Sector</th><th>Trips</th><th>Share</th><th>Velocity</th></tr></thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+      </article>`);
+  }
+  document.getElementById('insights-container').innerHTML = sections.join('');
+}
