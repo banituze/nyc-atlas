@@ -91,4 +91,11 @@ CREATE TABLE trips (
     FOREIGN KEY (pickup_zone_id) REFERENCES zones(zone_id),
     FOREIGN KEY (time_slot_id) REFERENCES time_slots(slot_id)
 );
+CREATE TABLE trip_flags (
+    flag_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    trip_id TEXT NOT NULL,
+    flag_type TEXT NOT NULL,
+    description TEXT,
+    FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE
+);
 """
