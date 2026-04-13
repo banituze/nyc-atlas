@@ -655,3 +655,24 @@ def api_zones():
         ORDER BY z.trip_count DESC
     """).fetchall()
     return jsonify([dict(r) for r in rows])
+@app.route("/api/duration_distribution")
+def api_duration_dist():
+    db = get_db()
+    buckets = [
+        ("0-5 min", 0, 300),
+        ("5-10 min", 300, 600),
+        ("10-15 min", 600, 900),
+        ("15-20 min", 900, 1200),
+        ("20-30 min", 1200, 1800),
+        ("30-45 min", 1800, 2700),
+        ("45-60 min", 2700, 3600),
+        ("60+ min", 3600, 999999),
+    ]
+    result = []
+    for label, lo, hi in buckets:
+        row = db.execute(
+            "SELECT COUNT(*) as count FROM trips WHERE trip_duration >= ? AND trip_duration < ?",
+            (lo, hi)
+        ).fetchone()
+        result.append({"label": label, "count": row["count"]})
+    return jsonify(result)
