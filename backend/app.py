@@ -577,3 +577,10 @@ def run_pipeline(db_path=DB_PATH, csv_path=CSV_PATH, limit=None):
     logger.info("=" * 60)
     logger.info(f"Pipeline complete in {total:.1f}s  ({valid_count / total:,.0f} rows/sec)")
     logger.info("=" * 60)
+# ─── API Endpoints ────────────────────────────────────────────────────────────
+@app.route("/")
+def index():
+    return send_from_directory(FRONTEND_DIR, "index.html")
+@app.route("/<path:filename>")
+def static_files(filename):
+    return send_from_directory(FRONTEND_DIR, filename)
