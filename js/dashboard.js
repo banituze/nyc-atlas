@@ -173,3 +173,123 @@ async function loadOverview() {
     });
   }
 }
+
+// ─── SHEET B: TEMPORAL CHARTS ──────────────────────────────────────────
+async function loadRhythms() {
+  if (loadedViews.rhythms) return;
+  loadedViews.rhythms = true;
+  const heatData = await fetchJSON('/api/heatmap');
+  if (heatData) buildHeatmap(heatData);
+  const daily = await fetchJSON('/api/daily');
+  if (daily) {
+    new Chart(document.getElementById('chart-daily'), {
+      type: 'bar',
+      data: {
+        labels: daily.map(d => DAYS_SHORT[d.day_of_week]),
+        datasets: [{ data: daily.map(d => d.count), backgroundColor: daily.map((d, i) => i >= 5 ? INK_FADED : INK), borderWidth: 0, barPercentage: 0.7 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+        plugins: {
+          tooltip: { callbacks: { title: c => DAYS_FULL[daily[c[0].dataIndex].day_of_week], label: c => `${fmtFull(c.parsed.y)} trips` } },
+          legend: {
+            display: true, position: 'top', align: 'end',
+            labels: {
+              color: INK, font: { family: "'DM Mono', monospace", size: 9 },
+              usePointStyle: true, pointStyle: 'circle', boxWidth: 10, boxHeight: 10, padding: 12,
+              generateLabels: () => [
+                { text: 'Weekday', fillStyle: INK, strokeStyle: INK },
+                { text: 'Weekend', fillStyle: INK_FADED, strokeStyle: INK_FADED },
+              ]
+            }
+          }
+        },
+        scales: {
+          ...paperAxes(),
+          x: { ...paperAxes().x, title: { display: true, text: 'Day of week', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { top: 6 } } },
+          y: { ...paperAxes().y, title: { display: true, text: 'Trip count', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { bottom: 6 } } }
+        }
+      }
+    });
+  }
+  const monthly = await fetchJSON('/api/monthly');
+  if (monthly) {
+    new Chart(document.getElementById('chart-monthly'), {
+      type: 'line',
+      data: {
+        labels: monthly.map(m => m.month_name),
+        datasets: [{
+          data: monthly.map(m => m.count),
+          borderColor: INK, backgroundColor: 'rgba(42, 37, 32, 0.08)', borderWidth: 2,
+          tension: 0.3, pointRadius: 5, pointBackgroundColor: PAPER, pointBorderColor: INK,
+          pointBorderWidth: 2, pointHoverRadius: 8, pointHoverBackgroundColor: INK,
+          pointHoverBorderColor: PAPER, fill: true,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+        plugins: { tooltip: { callbacks: { title: c => c[0].label, label: c => `${fmtFull(c.parsed.y)} trips` } } },
+        scales: {
+          ...paperAxes(),
+          x: { ...paperAxes().x, title: { display: true, text: 'Month', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { top: 6 } } },
+          y: { ...paperAxes().y, title: { display: true, text: 'Trip count', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { bottom: 6 } } }
+        }
+      }
+    });
+  }
+  const passengers = await fetchJSON('/api/passengers');
+  if (passengers) {
+    new Chart(document.getElementById('chart-passengers'), {
+      type: 'bar',
+      data: {
+        labels: passengers.map(p => p.passenger_count + ' pax'),
+        datasets: [{ data: passengers.map(p => p.count), backgroundColor: INK, borderWidth: 0, barPercentage: 0.75 }]
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+        plugins: { tooltip: { callbacks: { label: c => `${fmtFull(c.parsed.x)} trips` } } },
+        scales: {
+          x: {
+            grid: { color: INK_GHOST, lineWidth: 0.5, drawBorder: false }, border: { display: false },
+            ticks: { color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, callback: v => fmt(v) },
+            title: { display: true, text: 'Trip count', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { top: 6 } }
+          },
+          y: {
+            grid: { display: false }, border: { color: INK },
+            ticks: { color: INK, font: { family: "'Cormorant Garamond', serif", size: 13, style: 'italic' } },
+            title: { display: true, text: 'Passenger count', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { bottom: 6 } }
+          }
+        }
+      }
+    });
+  }
+  const vendors = await fetchJSON('/api/vendor_comparison');
+  if (vendors) {
+    new Chart(document.getElementById('chart-vendor'), {
+      type: 'bar',
+      data: {
+        labels: ['Duration (min)', 'Distance (km)', 'Velocity (km/h)'],
+        datasets: vendors.map((v, i) => ({
+          label: 'Vendor ' + (v.vendor_id === 1 ? 'I' : 'II'),
+          data: [Math.round(v.avg_duration_min * 10) / 10, Math.round(v.avg_distance * 100) / 100, Math.round(v.avg_speed * 10) / 10],
+          backgroundColor: i === 0 ? INK : INK_GHOST,
+          borderWidth: 0, barPercentage: 0.75, categoryPercentage: 0.75,
+        }))
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+        plugins: {
+          legend: {
+            display: true, position: 'top', align: 'end',
+            labels: { color: INK, font: { family: "'DM Mono', monospace", size: 9, style: 'italic' }, usePointStyle: true, pointStyle: 'circle', boxWidth: 12, boxHeight: 12, padding: 14 }
+          }
+        },
+        scales: {
+          ...paperAxes(),
+          x: { ...paperAxes().x, title: { display: true, text: 'Metric', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { top: 6 } } },
+          y: { ...paperAxes().y, title: { display: true, text: 'Value', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { bottom: 6 } } }
+        }
+      }
+    });
+  }
+}
