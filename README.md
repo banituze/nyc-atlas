@@ -58,7 +58,7 @@ python backend/app.py
 
 **No manual dataset setup is required.** On first run the application automatically downloads the Kaggle CSV from Dropbox (~20 s on fibre), runs the ETL pipeline (~30 s for 1.46 M rows), and then serves the dashboard. Subsequent runs see the populated database and skip both steps.
 
-If you already have your own copy of `train.csv` from Kaggle, place it at `data/train.csv` before the first run and the app will use it instead of downloading.
+If you already have your own copy of `train.csv` from [Kaggle](https://www.kaggle.com/competitions/nyc-taxi-trip-duration/data?select=train.zip), place it at `data/train.csv` before the first run and the app will use it instead of downloading.
 
 To skip auto-download entirely during development:
 ```bash
