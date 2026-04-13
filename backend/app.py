@@ -777,3 +777,11 @@ def api_trips():
         "per_page": per_page,
         "trips": [dict(r) for r in rows]
     })
+@app.route("/api/flags")
+def api_flags():
+    db = get_db()
+    rows = db.execute("""
+        SELECT f.flag_type, COUNT(*) as count
+        FROM trip_flags f GROUP BY f.flag_type ORDER BY count DESC
+    """).fetchall()
+    return jsonify([dict(r) for r in rows])
