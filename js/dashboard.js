@@ -293,3 +293,76 @@ async function loadRhythms() {
     });
   }
 }
+
+// ─── Heatmap (Sheet B) ─────────────────────────────────────────────────
+function buildHeatmap(data) {
+  const grid = {};
+  let maxCount = 0;
+  data.forEach(d => {
+    grid[`${d.hour_of_day}-${d.day_of_week}`] = d.count;
+    if (d.count > maxCount) maxCount = d.count;
+  });
+  const container = document.getElementById('heatmap');
+  container.innerHTML = '<canvas id="heatmap-canvas"></canvas><div id="heatmap-tip" class="hm-tip"></div>';
+  const canvas = document.getElementById('heatmap-canvas');
+  const tooltip = document.getElementById('heatmap-tip');
+  const colLabel = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const rowLabelW = 38, colLabelH = 20;
+  const cssWidth = container.clientWidth || 760;
+  const cellW = (cssWidth - rowLabelW) / 7;
+  const cellH = 13;
+  const cssHeight = colLabelH + cellH * 24;
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  canvas.width = Math.round(cssWidth * dpr);
+  canvas.height = Math.round(cssHeight * dpr);
+  canvas.style.width = cssWidth + 'px';
+  canvas.style.height = cssHeight + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, cssWidth, cssHeight);
+  ctx.fillStyle = '#000000';
+  ctx.font = "600 9px 'DM Mono', monospace";
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let d = 0; d < 7; d++) {
+    ctx.fillText(colLabel[d].toUpperCase(), rowLabelW + cellW * (d + 0.5), colLabelH / 2);
+  }
+  ctx.strokeStyle = '#000000'; ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(rowLabelW, colLabelH - 0.5);
+  ctx.lineTo(cssWidth, colLabelH - 0.5);
+  ctx.stroke();
+  for (let h = 0; h < 24; h++) {
+    const y = colLabelH + h * cellH;
+    if (h % 3 === 0) {
+      ctx.fillStyle = '#555555';
+      ctx.font = "9px 'DM Mono', monospace";
+      ctx.textAlign = 'right';
+      ctx.fillText(String(h).padStart(2, '0') + 'h', rowLabelW - 6, y + cellH / 2);
+    }
+    for (let d = 0; d < 7; d++) {
+      const count = grid[`${h}-${d}`] || 0;
+      const t = Math.sqrt(count / maxCount);
+      const v = Math.round(255 - 255 * t);
+      ctx.fillStyle = `rgb(${v},${v},${v})`;
+      const x = rowLabelW + d * cellW;
+      ctx.fillRect(x + 0.5, y + 0.5, cellW - 1, cellH - 1);
+      ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 0.5;
+      ctx.strokeRect(x + 0.5, y + 0.5, cellW - 1, cellH - 1);
+    }
+  }
+  canvas.onmousemove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    if (x < rowLabelW || y < colLabelH) { tooltip.style.opacity = '0'; return; }
+    const d = Math.floor((x - rowLabelW) / cellW);
+    const h = Math.floor((y - colLabelH) / cellH);
+    if (d < 0 || d > 6 || h < 0 || h > 23) { tooltip.style.opacity = '0'; return; }
+    const count = grid[`${h}-${d}`] || 0;
+    tooltip.textContent = `${colLabel[d]} ${String(h).padStart(2, '0')}h · ${fmtFull(count)} trips`;
+    tooltip.style.opacity = '1';
+    tooltip.style.left = (x + 14) + 'px';
+    tooltip.style.top = (y - 8) + 'px';
+  };
+  canvas.onmouseleave = () => { tooltip.style.opacity = '0'; };
+}
