@@ -342,3 +342,238 @@ def run_pipeline(db_path=DB_PATH, csv_path=CSV_PATH, limit=None):
         "Staten Island",
         "Outer Boroughs",
     ]
+    zone_id_map = {}
+    for zname in ALL_ZONES:
+        cur = conn.execute(
+            "INSERT INTO zones (zone_name, avg_lat, avg_lon, trip_count) VALUES (?,?,?,?)",
+            (zname, 0.0, 0.0, 0)
+        )
+        zone_id_map[zname] = cur.lastrowid
+    zone_stats = {zname: [0.0, 0.0, 0] for zname in ALL_ZONES}
+    slot_id_map = {}
+    for h in range(24):
+        for d in range(7):
+            period = ('night' if h < 6 else 'morning' if h < 12
+                      else 'afternoon' if h < 17 else 'evening' if h < 21 else 'night')
+            is_wk = 1 if d >= 5 else 0
+            cur = conn.execute(
+                "INSERT INTO time_slots (hour_of_day, day_of_week, period, is_weekend) VALUES (?,?,?,?)",
+                (h, d, period, is_wk)
+            )
+            slot_id_map[(h, d)] = cur.lastrowid
+    NYC_LAT_MIN, NYC_LAT_MAX = 40.49, 40.92
+    NYC_LON_MIN, NYC_LON_MAX = -74.27, -73.68
+    R2 = 12742.0
+    PI_180 = 0.017453292519943295
+    sin = math.sin
+    cos = math.cos
+    asin = math.asin
+    sqrt = math.sqrt
+    _classify_zone = classify_zone
+    raw_count = 0
+    valid_count = 0
+    ex_missing = 0
+    ex_coords = 0
+    ex_dur_low = 0
+    ex_dur_high = 0
+    ex_pax = 0
+    ex_zero_dist = 0
+    ex_far_dist = 0
+    ex_speed = 0
+    BATCH_SIZE = 10000
+    trip_batch = []
+    flag_batch = []
+    INSERT_TRIP = """INSERT OR IGNORE INTO trips
+        (trip_id, vendor_id, pickup_datetime, dropoff_datetime, passenger_count,
+         pickup_longitude, pickup_latitude, dropoff_longitude, dropoff_latitude,
+         store_and_fwd_flag, trip_duration, distance_km, speed_kmh,
+         hour_of_day, day_of_week, month, pickup_zone_id, time_slot_id)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+    INSERT_FLAG = "INSERT INTO trip_flags (trip_id, flag_type, description) VALUES (?,?,?)"
+    logger.info("Stage 1/3: Streaming CSV and inserting trips...")
+    conn.execute("BEGIN")
+    with open(csv_path, "r", buffering=1 << 20) as f:
+        first_line = f.readline()
+        f.seek(0)
+        delim = '\t' if first_line.count('\t') > first_line.count(',') else ','
+        logger.info(f"  Detected delimiter: {'TAB' if delim == chr(9) else 'COMMA'}")
+        reader = csv.reader(f, delimiter=delim)
+        header = next(reader)
+        try:
+            c_id = header.index("id")
+            c_vendor = header.index("vendor_id")
+            c_pickup = header.index("pickup_datetime")
+            c_dropoff = header.index("dropoff_datetime")
+            c_pax = header.index("passenger_count")
+            c_plon = header.index("pickup_longitude")
+            c_plat = header.index("pickup_latitude")
+            c_dlon = header.index("dropoff_longitude")
+            c_dlat = header.index("dropoff_latitude")
+            c_sfwd = header.index("store_and_fwd_flag")
+            c_dur = header.index("trip_duration")
+        except ValueError as e:
+            logger.error(f"CSV missing required column: {e}")
+            conn.rollback()
+            conn.close()
+            return
+        for row in reader:
+            raw_count += 1
+            if limit and raw_count > limit:
+                break
+            try:
+                trip_id = row[c_id]
+                vendor = int(row[c_vendor])
+                pickup_dt = row[c_pickup]
+                dropoff_dt = row[c_dropoff]
+                passengers = int(row[c_pax])
+                p_lon = float(row[c_plon])
+                p_lat = float(row[c_plat])
+                d_lon = float(row[c_dlon])
+                d_lat = float(row[c_dlat])
+                duration = int(row[c_dur])
+            except (IndexError, ValueError):
+                ex_missing += 1
+                continue
+            if (p_lat < NYC_LAT_MIN or p_lat > NYC_LAT_MAX or
+                p_lon < NYC_LON_MIN or p_lon > NYC_LON_MAX or
+                d_lat < NYC_LAT_MIN or d_lat > NYC_LAT_MAX or
+                d_lon < NYC_LON_MIN or d_lon > NYC_LON_MAX):
+                ex_coords += 1
+                continue
+            if duration < 30:
+                ex_dur_low += 1
+                continue
+            if duration > 43200:
+                ex_dur_high += 1
+                continue
+            if passengers < 1 or passengers > 8:
+                ex_pax += 1
+                continue
+            dlat = (d_lat - p_lat) * PI_180
+            dlon = (d_lon - p_lon) * PI_180
+            a = (sin(dlat * 0.5) ** 2 +
+                 cos(p_lat * PI_180) * cos(d_lat * PI_180) * sin(dlon * 0.5) ** 2)
+            distance = R2 * asin(sqrt(a))
+            if distance < 0.05:
+                ex_zero_dist += 1
+                continue
+            if distance > 100:
+                ex_far_dist += 1
+                continue
+            speed = distance * 3600.0 / duration
+            if speed > 150:
+                ex_speed += 1
+                continue
+            try:
+                if '/' in pickup_dt:
+                    date_part, time_part = pickup_dt.split(' ', 1)
+                    m_str, d_str, y_str = date_part.split('/')
+                    h_str, mi_str = time_part.split(':', 1)
+                    month = int(m_str)
+                    day_num = int(d_str)
+                    year = int(y_str)
+                    hour = int(h_str)
+                else:
+                    date_part, time_part = pickup_dt.split(' ', 1)
+                    year = int(date_part[0:4])
+                    month = int(date_part[5:7])
+                    day_num = int(date_part[8:10])
+                    hour = int(time_part[0:2])
+            except (ValueError, IndexError):
+                ex_missing += 1
+                continue
+            if month < 3:
+                zm = month + 12
+                zy = year - 1
+            else:
+                zm = month
+                zy = year
+            K = zy % 100
+            J = zy // 100
+            zeller = (day_num + (13 * (zm + 1)) // 5 + K + K // 4 + J // 4 + 5 * J) % 7
+            dow = (zeller + 5) % 7
+            zone_name = _classify_zone(p_lat, p_lon)
+            zs = zone_stats[zone_name]
+            zs[0] += p_lat
+            zs[1] += p_lon
+            zs[2] += 1
+            zone_id = zone_id_map[zone_name]
+            slot_id = slot_id_map.get((hour, dow))
+            store_fwd = 1 if row[c_sfwd] == "Y" else 0
+            month_val = month
+            distance_r = int(distance * 1000 + 0.5) / 1000.0
+            speed_r = int(speed * 100 + 0.5) / 100.0
+            trip_batch.append((
+                trip_id, vendor, pickup_dt, dropoff_dt, passengers,
+                p_lon, p_lat, d_lon, d_lat, store_fwd, duration,
+                distance_r, speed_r,
+                hour, dow, month_val,
+                zone_id,
+                slot_id
+            ))
+            if speed > 80:
+                flag_batch.append((trip_id, "high_speed", f"Speed: {speed:.1f} km/h"))
+            if duration > 7200:
+                flag_batch.append((trip_id, "long_trip", f"Duration: {duration // 60} min"))
+            if distance > 30:
+                flag_batch.append((trip_id, "long_distance", f"Distance: {distance:.1f} km"))
+            valid_count += 1
+            if len(trip_batch) >= BATCH_SIZE:
+                conn.executemany(INSERT_TRIP, trip_batch)
+                trip_batch.clear()
+                if valid_count % 100000 == 0:
+                    elapsed = _time.time() - t_start
+                    rate = valid_count / elapsed if elapsed > 0 else 0
+                    logger.info(f"  ...{valid_count:,} rows loaded ({rate:,.0f} rows/sec)")
+    if trip_batch:
+        conn.executemany(INSERT_TRIP, trip_batch)
+        trip_batch.clear()
+    if flag_batch:
+        conn.executemany(INSERT_FLAG, flag_batch)
+    t_load = _time.time() - t_start
+    logger.info(f"  Raw records: {raw_count:,}")
+    logger.info(f"  Valid records: {valid_count:,}")
+    excluded = {
+        "missing_fields": ex_missing, "invalid_coords": ex_coords,
+        "invalid_duration": ex_dur_low, "outlier_duration": ex_dur_high,
+        "invalid_passengers": ex_pax, "zero_distance": ex_zero_dist,
+        "outlier_distance": ex_far_dist, "outlier_speed": ex_speed,
+    }
+    for reason, count in excluded.items():
+        if count > 0:
+            logger.info(f"  Excluded ({reason}): {count:,}")
+    logger.info(f"Stage 1 complete in {t_load:.1f}s")
+    logger.info("Stage 2/3: Updating zone statistics...")
+    t_stage2 = _time.time()
+    zone_updates = []
+    for zname, (lat_sum, lon_sum, cnt) in zone_stats.items():
+        if cnt > 0:
+            zone_updates.append((round(lat_sum / cnt, 6), round(lon_sum / cnt, 6), cnt, zone_id_map[zname]))
+    conn.executemany(
+        "UPDATE zones SET avg_lat=?, avg_lon=?, trip_count=? WHERE zone_id=?",
+        zone_updates
+    )
+    conn.execute("DELETE FROM zones WHERE trip_count = 0")
+    logger.info(f"  Active zones: {sum(1 for (_,_,c,_) in zone_updates if c > 0)}")
+    logger.info(f"Stage 2 complete in {_time.time() - t_stage2:.1f}s")
+    conn.execute(
+        "INSERT INTO cleaning_log (stage, records_in, records_out, records_excluded, reason) VALUES (?,?,?,?,?)",
+        ("validation", raw_count, valid_count, sum(excluded.values()), json.dumps(excluded))
+    )
+    conn.execute(
+        "INSERT INTO cleaning_log (stage, records_in, records_out, records_excluded, reason) VALUES (?,?,?,?,?)",
+        ("insertion", valid_count, valid_count, len(flag_batch), f"{len(flag_batch)} flagged trips")
+    )
+    conn.commit()
+    logger.info("Stage 3/3: Creating indexes...")
+    t_idx = _time.time()
+    conn.executescript(INDEX_SQL)
+    conn.execute("ANALYZE")
+    logger.info(f"Indexes created in {_time.time() - t_idx:.1f}s")
+    conn.execute("PRAGMA synchronous = NORMAL")
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.close()
+    total = _time.time() - t_start
+    logger.info("=" * 60)
+    logger.info(f"Pipeline complete in {total:.1f}s  ({valid_count / total:,.0f} rows/sec)")
+    logger.info("=" * 60)
