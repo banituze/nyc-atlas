@@ -67,4 +67,28 @@ CREATE TABLE time_slots (
     is_weekend INTEGER NOT NULL DEFAULT 0,
     UNIQUE(hour_of_day, day_of_week)
 );
+CREATE TABLE trips (
+    trip_id TEXT PRIMARY KEY,
+    vendor_id INTEGER NOT NULL,
+    pickup_datetime TEXT NOT NULL,
+    dropoff_datetime TEXT NOT NULL,
+    passenger_count INTEGER NOT NULL,
+    pickup_longitude REAL NOT NULL,
+    pickup_latitude REAL NOT NULL,
+    dropoff_longitude REAL NOT NULL,
+    dropoff_latitude REAL NOT NULL,
+    store_and_fwd_flag INTEGER NOT NULL DEFAULT 0,
+    trip_duration INTEGER NOT NULL,
+    -- Derived features
+    distance_km REAL NOT NULL,
+    speed_kmh REAL NOT NULL,
+    hour_of_day INTEGER NOT NULL,
+    day_of_week INTEGER NOT NULL,
+    month INTEGER NOT NULL,
+    -- Foreign keys
+    pickup_zone_id INTEGER,
+    time_slot_id INTEGER,
+    FOREIGN KEY (pickup_zone_id) REFERENCES zones(zone_id),
+    FOREIGN KEY (time_slot_id) REFERENCES time_slots(slot_id)
+);
 """
