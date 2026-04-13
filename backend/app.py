@@ -624,3 +624,20 @@ def api_daily():
         d["day_name"] = days[d["day_of_week"]]
         result.append(d)
     return jsonify(result)
+@app.route("/api/monthly")
+def api_monthly():
+    db = get_db()
+    months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    rows = db.execute("""
+        SELECT month, COUNT(*) as count,
+               AVG(trip_duration)/60 as avg_duration_min,
+               AVG(distance_km) as avg_distance
+        FROM trips GROUP BY month ORDER BY month
+    """).fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        d["month_name"] = months[d["month"]] if d["month"] < len(months) else str(d["month"])
+        result.append(d)
+    return jsonify(result)
