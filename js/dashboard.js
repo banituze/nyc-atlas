@@ -366,3 +366,75 @@ function buildHeatmap(data) {
   };
   canvas.onmouseleave = () => { tooltip.style.opacity = '0'; };
 }
+
+// ─── SHEET C: BOROUGH PLATES ───────────────────────────────────────────
+async function loadAtlas() {
+  if (loadedViews.atlas) return;
+  loadedViews.atlas = true;
+  const zones = await fetchJSON('/api/zones');
+  if (!zones) return;
+  new Chart(document.getElementById('chart-zones'), {
+    type: 'bar',
+    data: {
+      labels: zones.map(z => z.zone_name),
+      datasets: [{
+        data: zones.map(z => z.trip_count),
+        backgroundColor: zones.map((z, i) => i < 4 ? INK : INK_GHOST),
+        borderWidth: 0, barPercentage: 0.8,
+      }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+      plugins: {
+        tooltip: { callbacks: { title: c => c[0].label, label: c => `${fmtFull(c.parsed.x)} pickups` } },
+        legend: {
+          display: true, position: 'top', align: 'end',
+          labels: {
+            color: INK, font: { family: "'DM Mono', monospace", size: 9 },
+            usePointStyle: true, pointStyle: 'circle', boxWidth: 10, boxHeight: 10, padding: 12,
+            generateLabels: () => [
+              { text: 'Top zones', fillStyle: INK, strokeStyle: INK },
+              { text: 'Other zones', fillStyle: INK_GHOST, strokeStyle: INK_GHOST },
+            ]
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: INK_GHOST, lineWidth: 0.5, drawBorder: false }, border: { display: false },
+          ticks: { color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, callback: v => fmt(v) },
+          title: { display: true, text: 'Pickup count', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { top: 6 } }
+        },
+        y: {
+          grid: { display: false }, border: { color: INK },
+          ticks: { autoSkip: false, color: INK, font: { family: "'Cormorant Garamond', serif", size: 13, style: 'italic' }, padding: 6 },
+          title: { display: true, text: 'Zone', color: INK_FADED, font: { family: "'DM Mono', monospace", size: 9 }, padding: { bottom: 6 } }
+        }
+      }
+    }
+  });
+
+  const total = zones.reduce((s, z) => s + z.trip_count, 0);
+  // Build a proper <table> so mobile card layout works cleanly
+  let html = '<table class="sr-table"><thead><tr>';
+  html += '<th class="sr-th sr-right">#</th>';
+  html += '<th class="sr-th">Sector</th>';
+  html += '<th class="sr-th sr-right">Trips</th>';
+  html += '<th class="sr-th sr-right">Share</th>';
+  html += '<th class="sr-th sr-right">Duration</th>';
+  html += '<th class="sr-th sr-right">Velocity</th>';
+  html += '</tr></thead><tbody>';
+  zones.forEach((z, i) => {
+    const pct = total ? ((z.trip_count / total) * 100).toFixed(3) : '0.0';
+    html += `<tr class="sr-row${i < 4 ? ' sr-top' : ''}">`;
+    html += `<td class="sr-td sr-rank" data-label="#">${String(i + 1).padStart(2, '0')}</td>`;
+    html += `<td class="sr-td sr-name" data-label="Sector">${z.zone_name}</td>`;
+    html += `<td class="sr-td sr-right sr-mono" data-label="Trips">${fmt(z.trip_count)}</td>`;
+    html += `<td class="sr-td sr-right sr-dim" data-label="Share">${pct}%</td>`;
+    html += `<td class="sr-td sr-right sr-dim" data-label="Duration">${z.avg_duration_min ? z.avg_duration_min.toFixed(1) + ' min' : '—'}</td>`;
+    html += `<td class="sr-td sr-right sr-dim" data-label="Velocity">${z.avg_speed ? z.avg_speed.toFixed(1) + ' km/h' : '—'}</td>`;
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('sector-register').innerHTML = html;
+}
