@@ -597,3 +597,14 @@ def api_stats():
     row2 = db.execute("SELECT COUNT(*) as cnt FROM trip_flags").fetchone()
     stats["flagged_trips"] = row2["cnt"]
     return jsonify(stats)
+@app.route("/api/hourly")
+def api_hourly():
+    db = get_db()
+    rows = db.execute("""
+        SELECT hour_of_day, COUNT(*) as count,
+               AVG(trip_duration)/60 as avg_duration_min,
+               AVG(distance_km) as avg_distance,
+               AVG(speed_kmh) as avg_speed
+        FROM trips GROUP BY hour_of_day ORDER BY hour_of_day
+    """).fetchall()
+    return jsonify([dict(r) for r in rows])
