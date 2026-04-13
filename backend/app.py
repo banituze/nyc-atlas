@@ -877,3 +877,43 @@ def download_dataset(url=DATASET_URL, dest=CSV_PATH, chunk_size=1 << 20):
                     next_log += 10 * 1024 * 1024
     final_mb = os.path.getsize(dest) / (1024 * 1024)
     logger.info(f"Downloaded {final_mb:.0f} MB to {dest}")
+def db_has_data():
+    if not os.path.exists(DB_PATH):
+        return False
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='trips'")
+        if not cur.fetchone():
+            conn.close()
+            return False
+        cur = conn.execute("SELECT COUNT(*) FROM trips")
+        count = cur.fetchone()[0]
+        conn.close()
+        return count > 0
+    except sqlite3.Error:
+        return False
+def ensure_dataset_and_db():
+    if db_has_data():
+        logger.info("Database already populated. Skipping ETL.")
+        return
+    if not os.path.exists(CSV_PATH):
+        logger.info(f"CSV not found at {CSV_PATH}. Fetching from remote...")
+        try:
+            download_dataset()
+        except Exception as e:
+            logger.error(f"Failed to download dataset: {e}")
+            logger.error("Place train.csv in data/ folder manually, or set DATASET_URL env var.")
+            return
+    logger.info("Database empty or missing. Running ETL pipeline...")
+    if os.path.exists(DB_PATH):
+        os.remove(DB_PATH)
+    run_pipeline()
+if os.environ.get("AUTO_PREPARE", "1") == "1" and __name__ != "__main__":
+    try:
+        ensure_dataset_and_db()
+    except Exception as e:
+        logger.error(f"Auto-prepare failed at import time: {e}")
+if __name__ == "__main__":
+    ensure_dataset_and_db()
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port, debug=False)
