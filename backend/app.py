@@ -785,3 +785,8 @@ def api_flags():
         FROM trip_flags f GROUP BY f.flag_type ORDER BY count DESC
     """).fetchall()
     return jsonify([dict(r) for r in rows])
+@app.route("/api/cleaning_log")
+def api_cleaning_log():
+    db = get_db()
+    rows = db.execute("SELECT * FROM cleaning_log ORDER BY log_id").fetchall()
+    return jsonify([dict(r) for r in rows])
