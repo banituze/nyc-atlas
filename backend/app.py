@@ -676,3 +676,19 @@ def api_duration_dist():
         ).fetchone()
         result.append({"label": label, "count": row["count"]})
     return jsonify(result)
+@app.route("/api/speed_distribution")
+def api_speed_dist():
+    db = get_db()
+    buckets = [
+        ("0-5", 0, 5), ("5-10", 5, 10), ("10-15", 10, 15),
+        ("15-20", 15, 20), ("20-25", 20, 25), ("25-30", 25, 30),
+        ("30-40", 30, 40), ("40-50", 40, 50), ("50+", 50, 999),
+    ]
+    result = []
+    for label, lo, hi in buckets:
+        row = db.execute(
+            "SELECT COUNT(*) as count FROM trips WHERE speed_kmh >= ? AND speed_kmh < ?",
+            (lo, hi)
+        ).fetchone()
+        result.append({"label": label + " km/h", "count": row["count"]})
+    return jsonify(result)
