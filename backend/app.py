@@ -108,3 +108,18 @@ CREATE TABLE cleaning_log (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 """
+# Indexes created AFTER bulk insert for massive speedup
+INDEX_SQL = """
+CREATE INDEX idx_trips_hour ON trips(hour_of_day);
+CREATE INDEX idx_trips_dow ON trips(day_of_week);
+CREATE INDEX idx_trips_month ON trips(month);
+CREATE INDEX idx_trips_vendor ON trips(vendor_id);
+CREATE INDEX idx_trips_duration ON trips(trip_duration);
+CREATE INDEX idx_trips_distance ON trips(distance_km);
+CREATE INDEX idx_trips_speed ON trips(speed_kmh);
+CREATE INDEX idx_trips_passengers ON trips(passenger_count);
+CREATE INDEX idx_trips_pickup_zone ON trips(pickup_zone_id);
+CREATE INDEX idx_trips_time_slot ON trips(time_slot_id);
+CREATE INDEX idx_flags_trip ON trip_flags(trip_id);
+CREATE INDEX idx_flags_type ON trip_flags(flag_type);
+"""
