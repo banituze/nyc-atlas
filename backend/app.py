@@ -286,3 +286,23 @@ def get_period(hour):
         return "evening"
     else:
         return "night"
+# ─── Data Cleaning Pipeline ──────────────────────────────────────
+def run_pipeline(db_path=DB_PATH, csv_path=CSV_PATH, limit=None):
+    import time as _time
+    t_start = _time.time()
+    logger.info("=" * 60)
+    logger.info("NYC Taxi Trip Data Pipeline — Starting")
+    logger.info("=" * 60)
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    conn = sqlite3.connect(db_path, isolation_level=None)
+    conn.execute("PRAGMA synchronous = OFF")
+    conn.execute("PRAGMA journal_mode = MEMORY")
+    conn.execute("PRAGMA temp_store = MEMORY")
+    conn.execute("PRAGMA cache_size = -64000")
+    conn.execute("PRAGMA locking_mode = EXCLUSIVE")
+    conn.executescript(SCHEMA_SQL)
+    logger.info(f"Schema created ({_time.time() - t_start:.1f}s)")
+    if not os.path.exists(csv_path):
+        logger.error(f"CSV not found: {csv_path}")
+        conn.close()
+        return
