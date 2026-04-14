@@ -418,7 +418,7 @@ async function loadAtlas() {
   // Build a proper <table> so mobile card layout works cleanly
   let html = '<table class="sr-table"><thead><tr>';
   html += '<th class="sr-th sr-right">#</th>';
-  html += '<th class="sr-th">Sector</th>';
+  html += '<th class="sr-th">Zone</th>';
   html += '<th class="sr-th sr-right">Trips</th>';
   html += '<th class="sr-th sr-right">Share</th>';
   html += '<th class="sr-th sr-right">Duration</th>';
@@ -428,7 +428,7 @@ async function loadAtlas() {
     const pct = total ? ((z.trip_count / total) * 100).toFixed(3) : '0.0';
     html += `<tr class="sr-row${i < 4 ? ' sr-top' : ''}">`;
     html += `<td class="sr-td sr-rank" data-label="#">${String(i + 1).padStart(2, '0')}</td>`;
-    html += `<td class="sr-td sr-name" data-label="Sector">${z.zone_name}</td>`;
+    html += `<td class="sr-td sr-name" data-label="Zone">${z.zone_name}</td>`;
     html += `<td class="sr-td sr-right sr-mono" data-label="Trips">${fmt(z.trip_count)}</td>`;
     html += `<td class="sr-td sr-right sr-dim" data-label="Share">${pct}%</td>`;
     html += `<td class="sr-td sr-right sr-dim" data-label="Duration">${z.avg_duration_min ? z.avg_duration_min.toFixed(2) + ' min' : '—'}</td>`;
@@ -587,11 +587,11 @@ async function loadInsights() {
       <article class="margin-card">
         <div class="margin-numeral">III.</div>
         <div class="margin-content">
-          <div class="margin-tag">Marginal note 03 · sector dominance</div>
+          <div class="margin-tag">Marginal note 03 · zone dominance</div>
           <h3 class="margin-title">${insights[2].title}</h3>
           <p class="margin-prose">${insights[2].interpretation}</p>
           <table class="margin-table">
-            <thead><tr><th>Rank</th><th>Sector</th><th>Trips</th><th>Share</th><th>Velocity</th></tr></thead>
+            <thead><tr><th>Rank</th><th>Zone</th><th>Trips</th><th>Share</th><th>Velocity</th></tr></thead>
             <tbody>${tableRows}</tbody>
           </table>
         </div>
