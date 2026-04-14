@@ -47,7 +47,7 @@ Chart.register(paperBackgroundPlugin);
 function fmt(n) {
   if (n == null) return '—';
   if (Number.isInteger(n)) return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return n.toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 function fmtFull(n) {
   if (n == null) return '—';
@@ -90,8 +90,8 @@ async function loadOverview() {
       if (v == null) return;
       if (key === 'total_trips') el.textContent = fmt(v);
       else if (key === 'total_hours') el.textContent = fmt(v);
-      else if (key === 'avg_distance_km') el.textContent = v.toFixed(1);
-      else if (key === 'avg_speed_kmh') el.textContent = v.toFixed(1);
+      else if (key === 'avg_distance_km') el.textContent = v.toFixed(2);
+      else if (key === 'avg_speed_kmh') el.textContent = v.toFixed(2);
       else el.textContent = fmt(v);
     });
   }
@@ -431,8 +431,8 @@ async function loadAtlas() {
     html += `<td class="sr-td sr-name" data-label="Sector">${z.zone_name}</td>`;
     html += `<td class="sr-td sr-right sr-mono" data-label="Trips">${fmt(z.trip_count)}</td>`;
     html += `<td class="sr-td sr-right sr-dim" data-label="Share">${pct}%</td>`;
-    html += `<td class="sr-td sr-right sr-dim" data-label="Duration">${z.avg_duration_min ? z.avg_duration_min.toFixed(1) + ' min' : '—'}</td>`;
-    html += `<td class="sr-td sr-right sr-dim" data-label="Velocity">${z.avg_speed ? z.avg_speed.toFixed(1) + ' km/h' : '—'}</td>`;
+    html += `<td class="sr-td sr-right sr-dim" data-label="Duration">${z.avg_duration_min ? z.avg_duration_min.toFixed(2) + ' min' : '—'}</td>`;
+    html += `<td class="sr-td sr-right sr-dim" data-label="Velocity">${z.avg_speed ? z.avg_speed.toFixed(2) + ' km/h' : '—'}</td>`;
     html += '</tr>';
   });
   html += '</tbody></table>';
@@ -476,9 +476,9 @@ async function loadLedger(page = 1) {
       <td>${t.vendor_id === 1 ? 'I' : 'II'}</td>
       <td class="mono">${t.pickup_datetime}</td>
       <td>${t.passenger_count}</td>
-      <td>${(t.trip_duration / 60).toFixed(1)} min</td>
+      <td>${(t.trip_duration / 60).toFixed(2)} min</td>
       <td>${t.distance_km.toFixed(2)} km</td>
-      <td>${t.speed_kmh.toFixed(1)} km/h</td>
+      <td>${t.speed_kmh.toFixed(2)} km/h</td>
     </tr>`;
   });
   html += '</tbody></table>';
@@ -504,8 +504,8 @@ async function loadInsights() {
     const rows = insights[0].data;
     const rush = rows.find(r => r.period === 'Rush Hour') || {};
     const off  = rows.find(r => r.period === 'Off-Peak') || {};
-    const speedDelta = (off.avg_speed && rush.avg_speed) ? (((rush.avg_speed - off.avg_speed) / off.avg_speed) * 100).toFixed(1) : '0';
-    const durDelta   = (off.avg_duration && rush.avg_duration) ? (((rush.avg_duration - off.avg_duration) / off.avg_duration) * 100).toFixed(1) : '0';
+    const speedDelta = (off.avg_speed && rush.avg_speed) ? (((rush.avg_speed - off.avg_speed) / off.avg_speed) * 100).toFixed(2) : '0';
+    const durDelta   = (off.avg_duration && rush.avg_duration) ? (((rush.avg_duration - off.avg_duration) / off.avg_duration) * 100).toFixed(2) : '0';
     sections.push(`
       <article class="margin-card">
         <div class="margin-numeral">I.</div>
@@ -518,13 +518,13 @@ async function loadInsights() {
             <tbody>
               <tr>
                 <td>Off-Peak</td>
-                <td>${off.avg_speed != null ? off.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
-                <td>${off.avg_duration != null ? off.avg_duration.toFixed(1) : '—'}<span class="unit">min</span></td>
+                <td>${off.avg_speed != null ? off.avg_speed.toFixed(2) : '—'}<span class="unit">km/h</span></td>
+                <td>${off.avg_duration != null ? off.avg_duration.toFixed(2) : '—'}<span class="unit">min</span></td>
                 <td>${fmt(off.trips || 0)}</td>
               </tr>
               <tr>
                 <td>Rush Hour</td>
-                <td>${rush.avg_speed != null ? rush.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+                <td>${rush.avg_speed != null ? rush.avg_speed.toFixed(2) : '—'}<span class="unit">km/h</span></td>
                 <td>${rush.avg_duration != null ? rush.avg_duration.toFixed(2) : '—'}<span class="unit">min</span></td>
                 <td>${fmt(rush.trips || 0)}</td>
               </tr>
@@ -556,15 +556,15 @@ async function loadInsights() {
               <tr>
                 <td>Weekday</td>
                 <td>${wkday.avg_distance != null ? wkday.avg_distance.toFixed(2) : '—'}<span class="unit">km</span></td>
-                <td>${wkday.avg_duration != null ? wkday.avg_duration.toFixed(1) : '—'}<span class="unit">min</span></td>
-                <td>${wkday.avg_speed != null ? wkday.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+                <td>${wkday.avg_duration != null ? wkday.avg_duration.toFixed(2) : '—'}<span class="unit">min</span></td>
+                <td>${wkday.avg_speed != null ? wkday.avg_speed.toFixed(2) : '—'}<span class="unit">km/h</span></td>
                 <td>${fmt(wkday.trips || 0)}</td>
               </tr>
-              <tr>
+              <tr>Fixed(2)
                 <td>Weekend</td>
                 <td>${wkend.avg_distance != null ? wkend.avg_distance.toFixed(2) : '—'}<span class="unit">km</span></td>
-                <td>${wkend.avg_duration != null ? wkend.avg_duration.toFixed(1) : '—'}<span class="unit">min</span></td>
-                <td>${wkend.avg_speed != null ? wkend.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+                <td>${wkend.avg_duration != null ? wkend.avg_duration.toFixed(2) : '—'}<span class="unit">min</span></td>
+                <td>${wkend.avg_speed != null ? wkend.avg_speed.toFixed(2) : '—'}<span class="unit">km/h</span></td>
                 <td>${fmt(wkend.trips || 0)}</td>
               </tr>
             </tbody>
@@ -580,8 +580,8 @@ async function loadInsights() {
         <td>${String(i + 1).padStart(2, '0')}</td>
         <td>${r.zone_name}</td>
         <td>${fmt(r.trip_count)}</td>
-        <td>${totalTop ? ((r.trip_count / totalTop) * 100).toFixed(1) : '—'}%</td>
-        <td>${r.avg_speed != null ? r.avg_speed.toFixed(1) : '—'}<span class="unit">km/h</span></td>
+        <td>${totalTop ? ((r.trip_count / totalTop) * 100).toFixed(2) : '—'}%</td>
+        <td>${r.avg_speed != null ? r.avg_speed.toFixed(2) : '—'}<span class="unit">km/h</span></td>
       </tr>`).join('');
     sections.push(`
       <article class="margin-card">
