@@ -38,7 +38,7 @@
 <rect class="note" x="70" y="270" width="260" height="120"/>
 <polygon class="nfold" points="70,270 70,285 85,270"/>
 <text x="82" y="290" class="ntext" font-weight="700">Dimension table</text>
-<text x="82" y="308" class="ntext">31 sectors pre-seeded</text>
+<text x="82" y="308" class="ntext">31 zones pre-seeded</text>
 <text x="82" y="324" class="ntext">before ETL begins.</text>
 <text x="82" y="346" class="ntext">Informal lat/lon buckets</text>
 <text x="82" y="362" class="ntext">named after Manhattan</text>

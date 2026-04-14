@@ -20,7 +20,7 @@ A full-stack urban mobility data explorer rendered as a folded paper map of New 
 12. [Spatial aggregation](#spatial-aggregation)
 
 ## What this is
-The **NYC Taxi Cartographic Atlas** is a full-stack web application that ingests, cleans, normalises, indexes, and visualises the NYC Taxi Trip Duration dataset published by the NYC Taxi and Limousine Commission via Kaggle. It processes approximately **1,458,644** fare records from the first half of 2016 and serves them through a Flask backend, a normalised SQLite database, fourteen REST endpoints, and a single-page browser dashboard rendered as a folded paper map of New York City.
+The **NYC Taxi Cartographic Atlas** is a full-stack web application that ingests, cleans, normalises, indexes, and visualises the NYC Taxi Trip Duration dataset published by the NYC Taxi and Limousine Commission via Kaggle. It processes **1,458,644** fare records from the first half of 2016 and serves them through a Flask backend, a normalised SQLite database, fourteen REST endpoints, and a single-page browser dashboard rendered as a folded paper map of New York City.
 
 The dashboard is organised as **five "sheets"** of a folded atlas. Every chart is a "plate" with a plate number, a marginal note, and a paper-fold drop shadow. The entire interface is rendered in **pure black and white**, every distinction made through value, typography, and ornament rather than colour.
 
