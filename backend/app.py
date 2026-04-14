@@ -440,13 +440,13 @@ def run_pipeline(db_path=DB_PATH, csv_path=CSV_PATH, limit=None):
                 d_lon < NYC_LON_MIN or d_lon > NYC_LON_MAX):
                 ex_coords += 1
                 continue
-            if duration < 30:
+            if duration < 60:
                 ex_dur_low += 1
                 continue
-            if duration > 43200:
+            if duration > 10800:
                 ex_dur_high += 1
                 continue
-            if passengers < 1 or passengers > 8:
+            if passengers < 1 or passengers > 6:
                 ex_pax += 1
                 continue
             dlat = (d_lat - p_lat) * PI_180
@@ -454,10 +454,10 @@ def run_pipeline(db_path=DB_PATH, csv_path=CSV_PATH, limit=None):
             a = (sin(dlat * 0.5) ** 2 +
                  cos(p_lat * PI_180) * cos(d_lat * PI_180) * sin(dlon * 0.5) ** 2)
             distance = R2 * asin(sqrt(a))
-            if distance < 0.05:
+            if distance < 0.1:
                 ex_zero_dist += 1
                 continue
-            if distance > 100:
+            if distance > 200:
                 ex_far_dist += 1
                 continue
             speed = distance * 3600.0 / duration
