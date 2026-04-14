@@ -38,9 +38,9 @@ The dashboard is organised as **five "sheets"** of a folded atlas. Every chart i
 |---|---|---|
 | **A** | General Survey | Survey key (4 headline figures) · Plate I *Diurnal Pulse* · Plate II *Duration Distribution* · Plate III *Velocity Distribution* |
 | **B** | Temporal Charts | Plate IV *168-hour Topographic Density Map* · Plate V *Days of the Week* · Plate VI *Monthly Procession* · Plate VII *Passengers per Fare* · Plate VIII *Vendor Comparison* |
-| **C** | Borough Plates | Plate IX *Pickup Density by Sector* · Plate X *Sector Register (full tabulation)* |
+| **C** | Borough Plates | Plate IX *Pickup Density by Zone* · Plate X *Zone Register (full tabulation)* |
 | **D** | Field Notebook | Plate XI *The Surveyor's Notebook*, filterable, sortable, paginated fare records |
-| **E** | Marginalia | Marginal Note I *The Rush-Hour Tax* · II *The Weekend Atlas* · III *Sector Dominance* |
+| **E** | Marginalia | Marginal Note I *The Rush-Hour Tax* · II *The Weekend Atlas* · III *Zone Dominance* |
 
 ## Setup and run
 
@@ -97,7 +97,7 @@ The application is a **single deployable Flask process** serving a static fronte
 
 **Request lifecycle**
 1. On first start, the backend checks for `data/train.csv`. If missing, it downloads the CSV from Dropbox via Python stdlib `urllib`.
-2. The ETL pipeline streams the CSV, validates each row, derives features (distance, velocity, hour-of-day, day-of-week), classifies pickups into sectors, and bulk-inserts into a fresh SQLite database.
+2. The ETL pipeline streams the CSV, validates each row, derives features (distance, velocity, hour-of-day, day-of-week), classifies pickups into zones, and bulk-inserts into a fresh SQLite database.
 3. Twelve indexes are created *after* the bulk load for maximum speed.
 4. Flask then serves the frontend and answers API requests with indexed SELECT queries, typically returning in under 50 ms.
 5. The browser fetches JSON from 14 endpoints and renders Chart.js plates, a canvas heatmap, filterable tables, and three narrative insight cards.
@@ -137,7 +137,7 @@ The dashboard rejects the default dark-theme dashboard look in favour of a folde
 | GET | `/api/hourly` | 24-row hour-of-day breakdown |
 | GET | `/api/daily` | 7-row day-of-week breakdown |
 | GET | `/api/monthly` | 6-row monthly breakdown |
-| GET | `/api/zones` | Ranked sectors (uses custom QuickSort) |
+| GET | `/api/zones` | Ranked zones (uses custom QuickSort) |
 | GET | `/api/duration_distribution` | Duration histogram (8 buckets) |
 | GET | `/api/speed_distribution` | Velocity histogram (9 buckets) |
 | GET | `/api/vendor_comparison` | Vendor I vs Vendor II on three axes |
@@ -178,13 +178,13 @@ Both are exposed through the `/api/zones` endpoint.
 
 ## Spatial aggregation
 
-Each trip's pickup coordinates are grouped into one of **thirty-one sectors via a piecewise envelope** by a constant-time classifier in `backend/app.py` (see `classify_zone()`). The classifier narrows by latitude band first, then branches on longitude.
+Each trip's pickup coordinates are grouped into one of **thirty-one zones via a piecewise envelope** by a constant-time classifier in `backend/app.py` (see `classify_zone()`). The classifier narrows by latitude band first, then branches on longitude.
 
 **Important disclaimer:** the bucket names (Midtown South, Upper East Side, etc.) are **informal labels** based on where those neighbourhoods appear on a public map of Manhattan, they are **descriptive shortcuts for aggregation, not surveyed boundaries**. A production version would swap this for a point-in-polygon lookup against the NYC TLC's official taxi zone shapefile.
 
 Running the classifier over the full 1,458,644 cleaned records produces this ranked register (rendered as **Plate X** in the application):
 
-| #  | Sector                           | Trips   | Share   | Duration | Velocity   |
+| #  |   Zone                           | Trips   | Share   | Duration | Velocity   |
 |----|----------------------------------|---------|---------|----------|------------|
 | 01 | Midtown West / Times Square      | 117,996 | 11.373% | 13.3 min | 13.7 km/h  |
 | 02 | East Village / NoHo              | 112,287 | 10.822% | 12.7 min | 13.0 km/h  |
@@ -221,4 +221,4 @@ Running the classifier over the full 1,458,644 cleaned records produces this ran
 Live trip counts and shares come from the `/api/zones` endpoint after the ETL pipeline runs against the full 1,458,644-row dataset. The Borough Plates sheet (Plate IX and Plate X) renders the ranked register dynamically from that endpoint, so the actual numbers reflect the real distribution at the moment you load the page.
 
 
-**Why the distribution is so skewed:** Around 99.8% of cleaned pickups in this dataset originate in Manhattan, which is why Manhattan gets 19 sub-sectors while the four outer boroughs collapse into 11 broader sectors. Resolution follows density: every Midtown sub-sector alone generates more pickups than the entire Bronx. For an urban mobility planner this is the most important finding in the dataset, supply must follow density, the outer boroughs are systemically under-served by yellow cabs, and pricing experiments should be A/B tested in the dense Manhattan sectors first where statistical power is highest.
+**Why the distribution is so skewed:** Around 99.8% of cleaned pickups in this dataset originate in Manhattan, which is why Manhattan gets 19 sub-zones while the four outer boroughs collapse into 11 broader zones. Resolution follows density: every Midtown sub-zone alone generates more pickups than the entire Bronx. For an urban mobility planner this is the most important finding in the dataset, supply must follow density, the outer boroughs are systemically under-served by yellow cabs, and pricing experiments should be A/B tested in the dense Manhattan zones first where statistical power is highest.
