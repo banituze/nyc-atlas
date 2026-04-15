@@ -847,7 +847,7 @@ def api_insights():
     return jsonify(insights)
 DATASET_URL = os.environ.get(
     "DATASET_URL",
-    "https://www.dropbox.com/scl/fi/ega99tbyzalx9jagiabzc/train.csv?rlkey=dfrnzx8ai0l1morp2burays5s&dl=1"
+    "https://www.dropbox.com/scl/fi/ega99tbyzalx9jagiabzc/train.csv?rlkey=dfrnzx8ai0l1morp2burays5s&st=ry40jiq1&dl=1"
 )
 def download_dataset(url=DATASET_URL, dest=CSV_PATH, chunk_size=1 << 20):
     import urllib.request
