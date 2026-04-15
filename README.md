@@ -20,7 +20,7 @@ A full-stack urban mobility data explorer rendered as a folded paper map of New 
 12. [Spatial aggregation](#spatial-aggregation)
 
 ## What this is
-The **NYC Taxi Cartographic Atlas** is a full-stack web application that ingests, cleans, normalises, indexes, and visualises the NYC Taxi Trip Duration dataset published by the NYC Taxi and Limousine Commission via Kaggle. It processes **1,458,644** fare records from the first half of 2016 and serves them through a Flask backend, a normalised SQLite database, fourteen REST endpoints, and a single-page browser dashboard rendered as a folded paper map of New York City.
+The **NYC Taxi Cartographic Atlas** is a full-stack web application that ingests, cleans, normalises, indexes, and visualises the NYC Taxi Trip Duration dataset published by the NYC Taxi and Limousine Commission via Kaggle. It processes approximately **1,458,644** fare records from the first half of 2016 and serves them through a Flask backend, a normalised SQLite database, fourteen REST endpoints, and a single-page browser dashboard rendered as a folded paper map of New York City.
 
 The dashboard is organised as **five "sheets"** of a folded atlas. Every chart is a "plate" with a plate number, a marginal note, and a paper-fold drop shadow. The entire interface is rendered in **pure black and white**, every distinction made through value, typography, and ornament rather than colour.
 
@@ -160,7 +160,7 @@ The streaming ETL processes the full 1.46-million-row dataset in approximately *
 6. **All 31 zones pre-seeded** at schema-creation time; the foreign key is looked up inline during insert (eliminates a second pass over 1.46 M rows)
 7. **Indexes created AFTER bulk load** (~5–10× insert speedup vs. maintaining indexes during insert)
 8. **SQLite pragmas tuned for bulk insert**: `synchronous=OFF`, `journal_mode=MEMORY`, `temp_store=MEMORY`, 64 MB page cache
-9. **Single explicit transaction** wrapping all inserts, with `executemany` batches of 10,000 rows
+9. **Single explicit transaction** wrapping all inserts, with `executemany` batches of 100,000 rows
 
 The full audit trail is written to `logs/pipeline.log` and recorded in the `cleaning_log` table.
 
@@ -184,41 +184,40 @@ Each trip's pickup coordinates are grouped into one of **thirty-one zones via a 
 
 Running the classifier over the full 1,458,644 cleaned records produces this ranked register (rendered as **Plate X** in the application):
 
-| #  |   Zone                           | Trips   | Share   | Duration | Velocity   |
-|----|----------------------------------|---------|---------|----------|------------|
-| 01 | Midtown West / Times Square      | 117,996 | 11.373% | 13.3 min | 13.7 km/h  |
-| 02 | East Village / NoHo              | 112,287 | 10.822% | 12.7 min | 13.0 km/h  |
-| 03 | Midtown East / Grand Central     | 97,160  | 9.364%  | 13.3 min | 12.8 km/h  |
-| 04 | Upper East Side South            | 92,191  | 8.885%  | 11.5 min | 14.3 km/h  |
-| 05 | Upper East Side                  | 77,437  | 7.463%  | 11.7 min | 14.8 km/h  |
-| 06 | Midtown South / Flatiron         | 77,291  | 7.449%  | 13.3 min | 12.7 km/h  |
-| 07 | Gramercy / Murray Hill           | 67,021  | 6.460%  | 12.9 min | 13.4 km/h  |
-| 08 | Upper West Side                  | 61,465  | 5.924%  | 11.6 min | 15.1 km/h  |
-| 09 | West Village / Meatpacking       | 60,468  | 5.828%  | 13.3 min | 14.0 km/h  |
-| 10 | Stuyvesant / LES North           | 49,788  | 4.799%  | 12.2 min | 14.1 km/h  |
-| 11 | Lower East Side / Chinatown      | 40,294  | 3.884%  | 13.9 min | 14.4 km/h  |
-| 12 | Lower Manhattan / Financial District | 34,698 | 3.344% | 17.3 min | 15.7 km/h  |
-| 13 | East Queens                      | 26,203  | 2.525%  | 30.2 min | 21.6 km/h  |
-| 14 | Tribeca / SoHo                   | 24,352  | 2.347%  | 14.7 min | 14.3 km/h  |
-| 15 | South Queens                     | 22,255  | 2.145%  | 41.9 min | 28.1 km/h  |
-| 16 | West Queens                      | 18,310  | 1.765%  | 13.5 min | 16.1 km/h  |
-| 17 | Chelsea / Hudson Yards           | 15,535  | 1.497%  | 12.7 min | 13.8 km/h  |
-| 18 | West Brooklyn                    | 11,565  | 1.115%  | 14.8 min | 16.6 km/h  |
-| 19 | Morningside Heights              | 8,783   | 0.847%  | 12.8 min | 16.3 km/h  |
-| 20 | North Brooklyn                   | 5,829   | 0.562%  | 13.2 min | 16.0 km/h  |
-| 21 | Outer Boroughs                   | 5,416   | 0.522%  | 13.6 min | 14.8 km/h  |
-| 22 | East Harlem                      | 5,408   | 0.521%  | 11.6 min | 16.1 km/h  |
-| 23 | Harlem                           | 2,431   | 0.234%  | 13.3 min | 18.9 km/h  |
-| 24 | Central Brooklyn                 | 1,584   | 0.153%  | 14.6 min | 17.3 km/h  |
-| 25 | Washington Heights               | 800     | 0.077%  | 14.6 min | 21.0 km/h  |
-| 26 | South Bronx                      | 372     | 0.036%  | 14.4 min | 17.5 km/h  |
-| 27 | Central Bronx                    | 211     | 0.020%  | 14.2 min | 18.5 km/h  |
-| 28 | South Brooklyn                   | 202     | 0.019%  | 17.8 min | 20.5 km/h  |
-| 29 | East Bronx                       | 100     | 0.010%  | 15.0 min | 20.6 km/h  |
-| 30 | Inwood                           | 87      | 0.008%  | 14.5 min | 17.8 km/h  |
-| 31 | Staten Island                    | 6       | 0.001%  | 24.2 min | 48.7 km/h  |
+| #  | Zone                                 | Trips   | Share   | Duration | Velocity   |
+|----|--------------------------------------|---------|---------|----------|------------|
+| 01 | Midtown West / Times Square          | 163,319 | 11.346% | 13.33 min | 13.69 km/h |
+| 02 | East Village / NoHo                  | 155,797 | 10.824% | 12.74 min | 12.96 km/h |
+| 03 | Midtown East / Grand Central         | 134,628 | 9.353%  | 13.33 min | 12.74 km/h |
+| 04 | Upper East Side South                | 127,564 | 8.862%  | 11.51 min | 14.30 km/h |
+| 05 | Midtown South / Flatiron             | 107,438 | 7.464%  | 13.32 min | 12.70 km/h |
+| 06 | Upper East Side                      | 107,173 | 7.446%  | 11.75 min | 14.81 km/h |
+| 07 | Gramercy / Murray Hill               | 92,995  | 6.461%  | 12.85 min | 13.43 km/h |
+| 08 | Upper West Side                      | 85,433  | 5.935%  | 11.65 min | 15.08 km/h |
+| 09 | West Village / Meatpacking           | 83,819  | 5.823%  | 13.26 min | 13.98 km/h |
+| 10 | Stuyvesant / LES North               | 69,489  | 4.828%  | 12.24 min | 14.10 km/h |
+| 11 | Lower East Side / Chinatown          | 56,128  | 3.899%  | 13.86 min | 14.35 km/h |
+| 12 | Lower Manhattan / Financial District | 48,084  | 3.341%  | 17.30 min | 15.71 km/h |
+| 13 | East Queens                          | 36,422  | 2.530%  | 30.07 min | 21.63 km/h |
+| 14 | Tribeca / SoHo                       | 33,875  | 2.353%  | 14.70 min | 14.31 km/h |
+| 15 | South Queens                         | 30,911  | 2.147%  | 41.69 min | 28.11 km/h |
+| 16 | West Queens                          | 25,384  | 1.763%  | 13.56 min | 15.98 km/h |
+| 17 | Chelsea / Hudson Yards               | 21,619  | 1.502%  | 12.66 min | 13.77 km/h |
+| 18 | West Brooklyn                        | 16,174  | 1.124%  | 14.81 min | 16.64 km/h |
+| 19 | Morningside Heights                  | 12,181  | 0.846%  | 12.84 min | 16.33 km/h |
+| 20 | North Brooklyn                       | 8,029   | 0.558%  | 13.27 min | 16.03 km/h |
+| 21 | Outer Boroughs                       | 7,594   | 0.528%  | 13.57 min | 14.69 km/h |
+| 22 | East Harlem                          | 7,372   | 0.512%  | 11.54 min | 16.16 km/h |
+| 23 | Harlem                               | 3,369   | 0.234%  | 13.41 min | 18.70 km/h |
+| 24 | Central Brooklyn                     | 2,187   | 0.152%  | 14.39 min | 17.40 km/h |
+| 25 | Washington Heights                   | 1,114   | 0.077%  | 14.85 min | 21.15 km/h |
+| 26 | South Bronx                          | 507     | 0.035%  | 14.71 min | 17.65 km/h |
+| 27 | Central Bronx                        | 287     | 0.020%  | 14.13 min | 18.78 km/h |
+| 28 | South Brooklyn                       | 273     | 0.019%  | 14.96 min | 20.72 km/h |
+| 29 | East Bronx                           | 136     | 0.009%  | 14.69 min | 20.80 km/h |
+| 30 | Inwood                               | 118     | 0.008%  | 14.21 min | 18.27 km/h |
+| 31 | Staten Island                        | 6       | 0.000%  | 24.22 min | 48.75 km/h |
 
 Live trip counts and shares come from the `/api/zones` endpoint after the ETL pipeline runs against the full 1,458,644-row dataset. The Borough Plates sheet (Plate IX and Plate X) renders the ranked register dynamically from that endpoint, so the actual numbers reflect the real distribution at the moment you load the page.
-
 
 **Why the distribution is so skewed:** Around 99.8% of cleaned pickups in this dataset originate in Manhattan, which is why Manhattan gets 19 sub-zones while the four outer boroughs collapse into 11 broader zones. Resolution follows density: every Midtown sub-zone alone generates more pickups than the entire Bronx. For an urban mobility planner this is the most important finding in the dataset, supply must follow density, the outer boroughs are systemically under-served by yellow cabs, and pricing experiments should be A/B tested in the dense Manhattan zones first where statistical power is highest.
