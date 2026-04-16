@@ -226,3 +226,6 @@ Live trip counts and shares come from the `/api/zones` endpoint after the ETL pi
 
 ## Team Participation Sheet
 [Team Participation Sheet](https://docs.google.com/spreadsheets/d/17tRKJmeQCvmZCTP5q8At6_ws-PNvF0bqPHusnQGhhAQ/edit)
+
+## Video Walkthrough
+[Video Walkthrough](https://drive.google.com/file/d/1Uulq5lrRVKFNc2aIErOCkUoWk1VYYqBj/view)
