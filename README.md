@@ -18,6 +18,8 @@ A full-stack urban mobility data explorer rendered as a folded paper map of New 
 10. [ETL pipeline performance](#etl-pipeline-performance)
 11. [Custom DSA](#custom-dsa)
 12. [Spatial aggregation](#spatial-aggregation)
+13. [Team Participation Sheet](#week-participation-sheet)
+14. [Video Walkthrough](#video-walkthrough)
 
 ## What this is
 The **NYC Taxi Cartographic Atlas** is a full-stack web application that ingests, cleans, normalises, indexes, and visualises the NYC Taxi Trip Duration dataset published by the NYC Taxi and Limousine Commission via Kaggle. It processes approximately **1,458,644** fare records from the first half of 2016 and serves them through a Flask backend, a normalised SQLite database, fourteen REST endpoints, and a single-page browser dashboard rendered as a folded paper map of New York City.
@@ -221,3 +223,6 @@ Running the classifier over the full 1,458,644 cleaned records produces this ran
 Live trip counts and shares come from the `/api/zones` endpoint after the ETL pipeline runs against the full 1,458,644-row dataset. The Borough Plates sheet (Plate IX and Plate X) renders the ranked register dynamically from that endpoint, so the actual numbers reflect the real distribution at the moment you load the page.
 
 **Why the distribution is so skewed:** Around 99.8% of cleaned pickups in this dataset originate in Manhattan, which is why Manhattan gets 19 sub-zones while the four outer boroughs collapse into 11 broader zones. Resolution follows density: every Midtown sub-zone alone generates more pickups than the entire Bronx. For an urban mobility planner this is the most important finding in the dataset, supply must follow density, the outer boroughs are systemically under-served by yellow cabs, and pricing experiments should be A/B tested in the dense Manhattan zones first where statistical power is highest.
+
+## Team Participation Sheet
+[Team Participation Sheet](https://docs.google.com/spreadsheets/d/17tRKJmeQCvmZCTP5q8At6_ws-PNvF0bqPHusnQGhhAQ/edit)
